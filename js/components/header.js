@@ -1,10 +1,7 @@
-/**
- * HEADER.JS — Компонент шапки приложения с навигацией, ролями и темами
- */
-
 import { ThemeManager, THEMES } from '../theme/themeManager.js';
 import { AuthManager } from '../state/auth.js';
 import { CartDrawer } from './cartDrawer.js';
+import { UserNutritionModal } from './userNutritionModal.js';
 import { showToast } from './toast.js';
 
 export const ROLES = {
@@ -43,6 +40,11 @@ export class Header {
 
           <!-- Действия -->
           <div class="header-actions">
+            <!-- КБЖУ дневник здоровья -->
+            <button class="btn btn-secondary btn-sm" id="header-nutrition-btn" title="Дневник питания и КБЖУ">
+              🍏 КБЖУ
+            </button>
+
             <!-- Селектор роли -->
             <button class="role-pill" id="role-selector-btn" title="Переключить контекст роли">
               <span class="role-dot"></span>
@@ -82,6 +84,14 @@ export class Header {
     if (roleBtn) {
       roleBtn.addEventListener('click', () => {
         this.openRoleModal();
+      });
+    }
+
+    // Кнопка КБЖУ дневника
+    const nutritionBtn = container.querySelector('#header-nutrition-btn');
+    if (nutritionBtn) {
+      nutritionBtn.addEventListener('click', () => {
+        UserNutritionModal.open();
       });
     }
 

@@ -12,6 +12,8 @@ import { ShowcaseView } from './views/showcaseView.js';
 import { BusinessView } from './views/businessView.js';
 import { PosView } from './views/posView.js';
 import { CorporatePortalView } from './views/corporatePortalView.js';
+import { AdminView } from './views/adminView.js';
+import { DbViewerView } from './views/dbViewerView.js';
 import { CartDrawer } from './components/cartDrawer.js';
 import { ExportService } from './services/exportService.js';
 import { showToast } from './components/toast.js';
@@ -34,7 +36,7 @@ class App {
     // 4. Запуск роутера
     Router.init();
 
-    console.log('🚀 FoodFlow — Этап 6: Корпоративные B2B-заявки и Финансы P&L запущены');
+    console.log('🚀 FoodFlow — Этап 7: Платформа полностью готова к работе (100%)');
   }
 
   static registerRoutes() {
@@ -51,10 +53,10 @@ class App {
     Router.register('corporate', (container) => CorporatePortalView.render(container));
 
     // 5. Админ (Управление платформой)
-    Router.register('admin', (container) => this.renderAdminView(container));
+    Router.register('admin', (container) => AdminView.render(container));
 
     // 6. Управление базой данных (DB Viewer & JSON Backup)
-    Router.register('db-viewer', (container) => this.renderDbViewerView(container));
+    Router.register('db-viewer', (container) => DbViewerView.render(container));
   }
 
   // =========================================================================
