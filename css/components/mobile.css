@@ -11,7 +11,8 @@
 }
 
 @media (max-width: 768px) {
-  .hide-on-mobile {
+  .hide-on-mobile,
+  .main-nav {
     display: none !important;
   }
 
@@ -31,8 +32,21 @@
   }
 
   .header-container {
-    gap: 8px;
+    gap: 6px;
     padding: 0 var(--space-3);
+    justify-content: space-between;
+  }
+
+  .header-actions {
+    gap: 6px;
+  }
+
+  #header-theme-name {
+    display: none;
+  }
+
+  .theme-toggle-btn {
+    padding: 6px 8px;
   }
 
   /* Кнопки и инпуты с гарантированной зоной нажатия >= 48px */
@@ -43,6 +57,18 @@
 
   .container {
     padding: 0 var(--space-3);
+  }
+
+  /* Горизонтальный скролл табов и чипов */
+  .business-tabs,
+  .category-chips,
+  .chip-group {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .business-tabs::-webkit-scrollbar,
+  .category-chips::-webkit-scrollbar {
+    display: none;
   }
 }
 
@@ -373,19 +399,22 @@
 
   .table-as-cards thead,
   .corp-requests-table thead,
+  .admin-table thead,
   .recipe-builder-table thead {
     display: none; /* скрываем заголовки таблиц */
   }
 
   .table-as-cards tbody,
-  .corp-requests-table tbody {
+  .corp-requests-table tbody,
+  .admin-table tbody {
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
   }
 
   .table-as-cards tr,
-  .corp-requests-table tr {
+  .corp-requests-table tr,
+  .admin-table tr {
     display: flex;
     flex-direction: column;
     background-color: var(--color-surface);
@@ -396,11 +425,13 @@
   }
 
   .table-as-cards td,
-  .corp-requests-table td {
+  .corp-requests-table td,
+  .admin-table td {
     padding: 4px 0;
     border: none;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
   }
 }
