@@ -1,0 +1,204 @@
+/**
+ * POS.CSS — Стили сенсорного кассового терминала, тач-плиток и фискального чека
+ */
+
+.pos-terminal-layout {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: var(--space-4);
+  height: calc(100vh - 120px);
+  min-height: 580px;
+}
+
+@media (max-width: 1024px) {
+  .pos-terminal-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+}
+
+/* Верхний статус-бар смены кассира */
+.pos-shift-statusbar {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  box-shadow: var(--shadow-card);
+}
+
+/* Левая колонка: Категории и плитки */
+.pos-catalog-panel {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  overflow: hidden;
+}
+
+.pos-touch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: var(--space-3);
+  overflow-y: auto;
+  padding-right: 4px;
+  flex: 1;
+}
+
+/* Сенсорная плитка блюда */
+.pos-dish-tile {
+  background-color: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  transition: transform var(--transition-fast), border-color var(--transition-fast), background-color var(--transition-fast);
+  position: relative;
+  min-height: 110px;
+  justify-content: space-between;
+}
+
+.pos-dish-tile:hover {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-light);
+  transform: translateY(-2px);
+}
+
+.pos-dish-tile:active {
+  transform: scale(0.96);
+}
+
+.pos-dish-tile.tile-stoplist {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+
+.pos-tile-icon {
+  font-size: 2.2rem;
+  margin-bottom: 4px;
+}
+
+.pos-tile-title {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.2;
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+
+.pos-tile-price {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-extrabold);
+  color: var(--color-primary);
+}
+
+/* Правая колонка: Панель чека */
+.pos-bill-panel {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.pos-bill-header {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--color-surface-alt);
+}
+
+.pos-bill-items-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pos-bill-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  background-color: var(--color-surface-alt);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+}
+
+.pos-bill-footer {
+  padding: var(--space-4);
+  border-top: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* Кнопки быстрых купюр в окне оплаты */
+.quick-cash-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: var(--space-3) 0;
+}
+
+.cash-nominal-btn {
+  padding: 10px;
+  background-color: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  text-align: center;
+  transition: all var(--transition-fast);
+}
+
+.cash-nominal-btn:hover {
+  background-color: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* Чек термопринтера */
+.fiscal-receipt-paper {
+  background: #FFFFFF;
+  color: #111111 !important;
+  font-family: 'Courier New', Courier, monospace;
+  padding: 20px;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  max-width: 320px;
+  margin: 0 auto;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.fiscal-receipt-paper * {
+  color: #111111 !important;
+}
+
+.fiscal-divider {
+  border-top: 1px dashed #444444;
+  margin: 8px 0;
+}

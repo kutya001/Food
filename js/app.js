@@ -10,6 +10,7 @@ import { Header } from './components/header.js';
 import { Router } from './router.js';
 import { ShowcaseView } from './views/showcaseView.js';
 import { BusinessView } from './views/businessView.js';
+import { PosView } from './views/posView.js';
 import { CartDrawer } from './components/cartDrawer.js';
 import { ExportService } from './services/exportService.js';
 import { showToast } from './components/toast.js';
@@ -32,7 +33,7 @@ class App {
     // 4. Запуск роутера
     Router.init();
 
-    console.log('🚀 FoodFlow — Этап 4: Бизнес-модуль, Склад, Техкарты и Калькуляция запущены');
+    console.log('🚀 FoodFlow — Этап 5: Сенсорный POS-терминал и списание сырья запущены');
   }
 
   static registerRoutes() {
@@ -43,7 +44,7 @@ class App {
     Router.register('business', (container) => BusinessView.render(container));
 
     // 3. POS-Касса
-    Router.register('pos', (container) => this.renderPosView(container));
+    Router.register('pos', (container) => PosView.render(container));
 
     // 4. Корпоративное (Организация-заказчик)
     Router.register('corporate', (container) => this.renderCorporateView(container));
