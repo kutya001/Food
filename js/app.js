@@ -20,7 +20,8 @@ import { showToast } from './components/toast.js';
 
 class App {
   static init() {
-    // 1. Инициализация базы данных, темы и корзины
+    // 1. Инициализация базы данных, авторизации, темы и корзины
+    AuthManager.init();
     ThemeManager.init();
     CartDrawer.init();
 

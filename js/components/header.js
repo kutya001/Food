@@ -1,23 +1,35 @@
+/**
+ * HEADER.JS — Компонент шапки приложения с динамической RBAC-навигацией, ролями и темами
+ */
+
 import { ThemeManager, THEMES } from '../theme/themeManager.js';
-import { AuthManager } from '../state/auth.js';
+import { AuthManager, ROLE_ACCESS_MATRIX } from '../state/auth.js';
 import { CartDrawer } from './cartDrawer.js';
 import { UserNutritionModal } from './userNutritionModal.js';
+import { AuthModal } from './authModal.js';
 import { showToast } from './toast.js';
 
-export const ROLES = {
-  'client': { key: 'client', name: 'Клиент (B2C)', icon: '👤', defaultTheme: 'fresh' },
-  'business': { key: 'business', name: 'Общепит (B2B Учёт)', icon: '🍳', defaultTheme: 'corporate' },
-  'pos': { key: 'pos', name: 'POS Касса', icon: '💻', defaultTheme: 'neo-dark' },
-  'corporate': { key: 'corporate', name: 'Орг.-заказчик', icon: '🏢', defaultTheme: 'corporate' },
-  'admin': { key: 'admin', name: 'Администратор', icon: '⚙️', defaultTheme: 'corporate' }
-};
+export const ALL_NAV_ROUTES = [
+  { key: 'showcase', label: 'Витрина', icon: '🍲' },
+  { key: 'business', label: 'Бизнес', icon: '🍳' },
+  { key: 'pos', label: 'POS-Касса', icon: '💻' },
+  { key: 'corporate', label: 'Корпоративное', icon: '🏢' },
+  { key: 'admin', label: 'Админ', icon: '🛡️' },
+  { key: 'db-viewer', label: '💾 База данных', icon: '🗄️' }
+];
 
 export class Header {
   static render(container) {
     const currentThemeKey = ThemeManager.getCurrentTheme();
     const currentTheme = THEMES[currentThemeKey] || THEMES.fresh;
-    const activeRoleKey = AuthManager.getActiveRole();
-    const roleData = ROLES[activeRoleKey] || ROLES.client;
+    const currentUser = AuthManager.getActiveUser();
+    const activeRoleKey = currentUser?.role || 'client';
+
+    // Фильтрация доступных ссылок в навигации под активную роль
+    const allowedRoutes = ROLE_ACCESS_MATRIX[activeRoleKey] || ['showcase'];
+    const visibleNavLinks = ALL_NAV_ROUTES.filter(r => allowedRoutes.includes(r.key));
+
+    const currentHash = window.location.hash.slice(2).split('?')[0] || 'showcase';
 
     container.innerHTML = `
       <header class="site-header">
@@ -28,27 +40,28 @@ export class Header {
             <span>FoodFlow</span>
           </a>
 
-          <!-- Навигация -->
+          <!-- Навигация: только разрешенные для роли разделы -->
           <nav class="main-nav" id="header-nav">
-            <a href="#/showcase" class="nav-link active" data-route="showcase">Витрина</a>
-            <a href="#/business" class="nav-link" data-route="business">Бизнес</a>
-            <a href="#/pos" class="nav-link" data-route="pos">POS-Касса</a>
-            <a href="#/corporate" class="nav-link" data-route="corporate">Корпоративное</a>
-            <a href="#/admin" class="nav-link" data-route="admin">Админ</a>
-            <a href="#/db-viewer" class="nav-link" data-route="db-viewer" title="Управление базой данных">💾 База данных</a>
+            ${visibleNavLinks.map(link => `
+              <a href="#/${link.key}" class="nav-link ${currentHash === link.key ? 'active' : ''}" data-route="${link.key}">
+                ${link.label}
+              </a>
+            `).join('')}
           </nav>
 
           <!-- Действия -->
           <div class="header-actions">
-            <!-- КБЖУ дневник здоровья -->
-            <button class="btn btn-secondary btn-sm" id="header-nutrition-btn" title="Дневник питания и КБЖУ">
-              🍏 КБЖУ
-            </button>
+            <!-- КБЖУ дневник здоровья (для клиентов) -->
+            ${activeRoleKey === 'client' || activeRoleKey === 'admin' ? `
+              <button class="btn btn-secondary btn-sm" id="header-nutrition-btn" title="Дневник питания и КБЖУ">
+                🍏 КБЖУ
+              </button>
+            ` : ''}
 
-            <!-- Селектор роли -->
-            <button class="role-pill" id="role-selector-btn" title="Переключить контекст роли">
+            <!-- Селектор роли / профиля пользователя -->
+            <button class="role-pill" id="role-selector-btn" title="Авторизация и выбор профиля">
               <span class="role-dot"></span>
-              <span id="header-role-name">${roleData.icon} ${roleData.name}</span>
+              <span id="header-role-name">${currentUser?.icon || '👤'} ${currentUser?.name ? currentUser.name.split(' ')[0] : 'Профиль'} (${currentUser?.roleName || 'B2C'})</span>
             </button>
 
             <!-- Кнопка выбора темы -->
@@ -71,7 +84,7 @@ export class Header {
   }
 
   static bindEvents(container) {
-    // Кнопка выбора темы
+    // Выбор темы
     const themeBtn = container.querySelector('#theme-selector-btn');
     if (themeBtn) {
       themeBtn.addEventListener('click', () => {
@@ -79,15 +92,15 @@ export class Header {
       });
     }
 
-    // Кнопка смены роли
+    // Авторизация / смена роли
     const roleBtn = container.querySelector('#role-selector-btn');
     if (roleBtn) {
       roleBtn.addEventListener('click', () => {
-        this.openRoleModal();
+        AuthModal.open('demo');
       });
     }
 
-    // Кнопка КБЖУ дневника
+    // КБЖУ дневник
     const nutritionBtn = container.querySelector('#header-nutrition-btn');
     if (nutritionBtn) {
       nutritionBtn.addEventListener('click', () => {
@@ -95,7 +108,7 @@ export class Header {
       });
     }
 
-    // Кнопка корзины
+    // Корзина
     const cartBtn = container.querySelector('#header-cart-btn');
     if (cartBtn) {
       cartBtn.addEventListener('click', () => {
@@ -116,76 +129,12 @@ export class Header {
       if (swatchEl && themeData) swatchEl.style.backgroundColor = themeData.primary;
     });
 
-    // Слушатель смены роли
-    window.addEventListener('roleChanged', (e) => {
-      const roleKey = e.detail.role;
-      const roleData = ROLES[roleKey] || ROLES.client;
-      const roleNameEl = document.getElementById('header-role-name');
-      if (roleNameEl) {
-        roleNameEl.textContent = `${roleData.icon} ${roleData.name}`;
+    // Слушатель смены роли — перерендер шапки для обновления ссылок меню
+    window.addEventListener('roleChanged', () => {
+      const headerRoot = document.getElementById('header-root');
+      if (headerRoot) {
+        Header.render(headerRoot);
       }
-    });
-  }
-
-  static openRoleModal() {
-    let modalBackdrop = document.getElementById('role-modal-backdrop');
-    if (!modalBackdrop) {
-      modalBackdrop = document.createElement('div');
-      modalBackdrop.id = 'role-modal-backdrop';
-      modalBackdrop.className = 'modal-backdrop';
-      document.body.appendChild(modalBackdrop);
-    }
-
-    const activeRole = AuthManager.getActiveRole();
-    const activeEst = AuthManager.getActiveEstablishment();
-    const activeOrg = AuthManager.getActiveOrganization();
-
-    modalBackdrop.innerHTML = `
-      <div class="modal-dialog" style="max-width:540px;">
-        <div class="modal-header">
-          <div>
-            <h3 class="modal-title">🔄 Переключение роли и профиля</h3>
-            <p class="text-sm text-muted" style="margin-top:4px;">Единый аккаунт — мгновенное переключение контекста</p>
-          </div>
-          <button class="modal-close-btn" id="close-role-modal">✕</button>
-        </div>
-        <div class="modal-body">
-          <div class="themes-grid" style="margin-bottom: var(--space-4);">
-            ${Object.values(ROLES).map(r => `
-              <div class="theme-card-option ${r.key === activeRole ? 'active' : ''}" data-role-key="${r.key}" style="grid-template-columns: 36px 1fr auto;">
-                <div style="font-size: 24px; display:grid; place-items:center;">${r.icon}</div>
-                <div class="theme-info-col">
-                  <h4>${r.name}</h4>
-                  <small class="text-muted">Тема по умолчанию: ${THEMES[r.defaultTheme].name}</small>
-                </div>
-                <div class="theme-check-icon">✓</div>
-              </div>
-            `).join('')}
-          </div>
-
-          <!-- Дополнительный контекст -->
-          <div style="padding: var(--space-3); background: var(--color-surface-alt); border-radius: var(--radius-md); border: 1px solid var(--color-border); font-size: var(--font-size-xs);">
-            <div style="margin-bottom: 4px;"><strong>Активное заведение (Общепит):</strong> ${activeEst ? activeEst.name : '—'}</div>
-            <div><strong>Активная организация (Заказчик):</strong> ${activeOrg ? activeOrg.name : '—'}</div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    setTimeout(() => modalBackdrop.classList.add('open'), 10);
-
-    modalBackdrop.querySelectorAll('.theme-card-option').forEach(card => {
-      card.addEventListener('click', () => {
-        const roleKey = card.dataset.roleKey;
-        AuthManager.switchRole(roleKey);
-        modalBackdrop.classList.remove('open');
-        setTimeout(() => modalBackdrop.remove(), 250);
-      });
-    });
-
-    modalBackdrop.querySelector('#close-role-modal').addEventListener('click', () => {
-      modalBackdrop.classList.remove('open');
-      setTimeout(() => modalBackdrop.remove(), 250);
     });
   }
 }

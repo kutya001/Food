@@ -1,7 +1,10 @@
 /**
- * ROUTER.JS — Hash-роутер для статического SPA (GitHub Pages Ready)
- * Обеспечивает навигацию без перезагрузок страниц и 404 ошибок.
+ * ROUTER.JS — Hash-роутер с Route Guards и ролевой защитой (RBAC)
+ * Обеспечивает безопасную навигацию на GitHub Pages без 404 ошибок.
  */
+
+import { AuthManager, ROLE_HOME_ROUTES } from './state/auth.js';
+import { showToast } from './components/toast.js';
 
 export class Router {
   static routes = {};
@@ -13,6 +16,7 @@ export class Router {
 
   static init() {
     window.addEventListener('hashchange', () => this.handleRoute());
+    window.addEventListener('roleChanged', () => this.handleRoute());
     this.handleRoute();
   }
 
@@ -26,7 +30,31 @@ export class Router {
   }
 
   static handleRoute() {
-    const route = this.getRouteFromHash();
+    let route = this.getRouteFromHash();
+    const user = AuthManager.getActiveUser();
+    const role = user?.role || 'client';
+
+    // =========================================================================
+    // ROUTE GUARD: Проверка прав доступа роли к маршруту
+    // =========================================================================
+    if (!AuthManager.canAccessRoute(route)) {
+      const allowedHome = ROLE_HOME_ROUTES[role] || 'showcase';
+      const routeNames = {
+        'business': 'Кабинет общепита',
+        'pos': 'POS-Касса',
+        'corporate': 'Корпоративный портал',
+        'admin': 'Панель администратора'
+      };
+
+      showToast(`⚠️ Доступ к разделу «${routeNames[route] || route}» ограничен для роли «${user?.roleName || role}»`, 'warning');
+      
+      // Автоматический редирект на разрешенный домашний раздел
+      if (route !== allowedHome) {
+        window.location.hash = `#/${allowedHome}`;
+        return; // handleRoute вызовется повторно по hashchange
+      }
+    }
+
     this.currentRoute = route;
 
     // Обновляем активную ссылку в шапке
