@@ -4,7 +4,6 @@
 
 import { db } from '../state/db.js';
 import { ExportService } from '../services/exportService.js';
-import { SeedService } from '../state/seed.js';
 import { showToast } from '../components/toast.js';
 
 export class DbViewerView {
@@ -123,7 +122,7 @@ export class DbViewerView {
     // Сброс к Seed Data
     container.querySelector('#btn-db-reset-seed').addEventListener('click', () => {
       if (confirm('Сбросить базу данных к начальному демонстрационному датасету (Seed Data)?')) {
-        SeedService.seedAll(true);
+        db.reset();
         showToast('База данных сброшена к исходному состоянию!', 'info');
         this.render(container);
       }

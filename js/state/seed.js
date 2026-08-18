@@ -414,3 +414,9 @@ export const INITIAL_SEED_DATA = {
     }
   ]
 };
+
+export const SeedService = {
+  getInitialData: () => JSON.parse(JSON.stringify(INITIAL_SEED_DATA)),
+  seedAll: () => INITIAL_SEED_DATA
+};
+
