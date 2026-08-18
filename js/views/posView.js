@@ -157,44 +157,6 @@ export class PosView {
         ` : ''}
       </div>
     `;
-                      ${d === 0 ? '0%' : d + '%'}
-                    </button>
-                  `).join('')}
-                </div>
-              </div>
-
-              <!-- Итоговые суммы -->
-              <div style="border-top: 1px dashed var(--color-border); padding-top: var(--space-2); display: flex; flex-direction: column; gap: 2px;">
-                <div style="display: flex; justify-content: space-between; font-size: var(--font-size-xs); color: var(--color-text-secondary);">
-                  <span>Сумма без скидки:</span>
-                  <span id="pos-raw-sum">0 сом</span>
-                </div>
-                ${this.discountPercent > 0 ? `
-                  <div style="display: flex; justify-content: space-between; font-size: var(--font-size-xs); color: var(--color-error);">
-                    <span>Скидка (${this.discountPercent}%):</span>
-                    <span id="pos-discount-sum">-0 сом</span>
-                  </div>
-                ` : ''}
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
-                  <strong style="font-size: var(--font-size-md);">К оплате:</strong>
-                  <strong style="font-size: var(--font-size-2xl); color: var(--color-primary);" id="pos-final-sum">0 сом</strong>
-                </div>
-              </div>
-
-              <!-- Кнопки действий -->
-              <div style="display: flex; gap: var(--space-2);">
-                <button class="btn btn-secondary btn-sm" id="btn-clear-pos-bill" style="color: var(--color-error); flex: 1;">
-                  🗑️ Очистить
-                </button>
-                <button class="btn btn-primary btn-lg" id="btn-pay-pos-bill" style="flex: 2; font-weight: var(--font-weight-extrabold);">
-                  💵 ОПЛАТИТЬ ЧЕК →
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
 
     this.bindEvents(container);
     this.renderTiles(container);
