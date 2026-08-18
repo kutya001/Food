@@ -1,5 +1,6 @@
 /**
- * MAP.CSS — Стили интерактивной векторной карты заведений и маркеров
+ * MAP.CSS — Полноценные стили интерактивного картографического движка
+ * Поддержка Pan & Zoom, 5 тем оформления, GPS локации и пульсирующих маркеров
  */
 
 .map-container-wrapper {
@@ -9,35 +10,127 @@
   overflow: hidden;
   box-shadow: var(--shadow-card);
   position: relative;
-  height: 540px;
+  height: 560px;
   margin-bottom: var(--space-8);
   display: flex;
   flex-direction: column;
 }
 
+/* Панель фильтров над картой */
+.map-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 10px 14px;
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  overflow-x: auto;
+  z-index: 20;
+}
+
+.map-chip {
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-alt);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.map-chip:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.map-chip.active {
+  background-color: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
+
+/* Область интерактивного холста */
 .map-canvas-area {
   flex: 1;
   position: relative;
-  background-color: #E5EDE6;
-  background-image: 
-    radial-gradient(#D3E0D4 1.5px, transparent 1.5px),
-    linear-gradient(to right, #DFE9E0 1px, transparent 1px),
-    linear-gradient(to bottom, #DFE9E0 1px, transparent 1px);
-  background-size: 30px 30px, 60px 60px, 60px 60px;
   overflow: hidden;
   cursor: grab;
+  user-select: none;
+  touch-action: none;
 }
 
-html[data-theme="neo-dark"] .map-canvas-area {
-  background-color: #121A22;
+.map-canvas-area:active {
+  cursor: grabbing;
+}
+
+.map-pan-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform-origin: center center;
+  transition: transform 0.05s ease-out;
+}
+
+/* =========================================================================
+   ТЕМИЗАЦИЯ ПОДЛОЖКИ КАРТЫ ДЛЯ 5 ТЕМ
+   ========================================================================= */
+/* 1. Fresh */
+html[data-theme="fresh"] .map-canvas-area {
+  background-color: #EBF3ED;
   background-image: 
-    radial-gradient(#1E2936 1.5px, transparent 1.5px),
-    linear-gradient(to right, #18222E 1px, transparent 1px),
-    linear-gradient(to bottom, #18222E 1px, transparent 1px);
+    radial-gradient(#D6E6DA 1.5px, transparent 1.5px),
+    linear-gradient(to right, #DDECE1 1px, transparent 1px),
+    linear-gradient(to bottom, #DDECE1 1px, transparent 1px);
   background-size: 30px 30px, 60px 60px, 60px 60px;
 }
 
-/* Маркеры заведений на карте */
+/* 2. Appetite */
+html[data-theme="appetite"] .map-canvas-area {
+  background-color: #FDF4EB;
+  background-image: 
+    radial-gradient(#F5DFCA 1.5px, transparent 1.5px),
+    linear-gradient(to right, #F9E9D9 1px, transparent 1px),
+    linear-gradient(to bottom, #F9E9D9 1px, transparent 1px);
+  background-size: 30px 30px, 60px 60px, 60px 60px;
+}
+
+/* 3. Neo-Dark */
+html[data-theme="neo-dark"] .map-canvas-area {
+  background-color: #0F1722;
+  background-image: 
+    radial-gradient(#1E2D40 1.5px, transparent 1.5px),
+    linear-gradient(to right, #152232 1px, transparent 1px),
+    linear-gradient(to bottom, #152232 1px, transparent 1px);
+  background-size: 30px 30px, 60px 60px, 60px 60px;
+}
+
+/* 4. Corporate */
+html[data-theme="corporate"] .map-canvas-area {
+  background-color: #EEF2F6;
+  background-image: 
+    radial-gradient(#D8E2EC 1.5px, transparent 1.5px),
+    linear-gradient(to right, #E2EAF1 1px, transparent 1px),
+    linear-gradient(to bottom, #E2EAF1 1px, transparent 1px);
+  background-size: 30px 30px, 60px 60px, 60px 60px;
+}
+
+/* 5. Premium */
+html[data-theme="premium"] .map-canvas-area {
+  background-color: #141416;
+  background-image: 
+    radial-gradient(#2A2A2E 1.5px, transparent 1.5px),
+    linear-gradient(to right, #202024 1px, transparent 1px),
+    linear-gradient(to bottom, #202024 1px, transparent 1px);
+  background-size: 30px 30px, 60px 60px, 60px 60px;
+}
+
+/* =========================================================================
+   МАРКЕРЫ И ПУЛЬСАЦИЯ
+   ========================================================================= */
 .map-marker-pin {
   position: absolute;
   transform: translate(-50%, -100%);
@@ -45,20 +138,20 @@ html[data-theme="neo-dark"] .map-canvas-area {
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: transform var(--transition-fast), filter var(--transition-fast);
+  transition: transform var(--transition-fast);
   z-index: 10;
 }
 
 .map-marker-pin:hover {
-  transform: translate(-50%, -110%) scale(1.1);
-  z-index: 20;
+  transform: translate(-50%, -108%) scale(1.08);
+  z-index: 25;
 }
 
 .marker-bubble {
   background-color: var(--color-surface);
   border: 2px solid var(--color-primary);
   border-radius: var(--radius-full);
-  padding: 6px 14px;
+  padding: 6px 12px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
@@ -67,6 +160,23 @@ html[data-theme="neo-dark"] .map-canvas-area {
   font-weight: var(--font-weight-extrabold);
   font-size: var(--font-size-xs);
   color: var(--color-text);
+  position: relative;
+}
+
+.marker-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-success);
+  display: inline-block;
+  box-shadow: 0 0 0 0 rgba(46, 125, 50, 0.7);
+  animation: pulseGreen 1.8s infinite;
+}
+
+@keyframes pulseGreen {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 125, 50, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(46, 125, 50, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(46, 125, 50, 0); }
 }
 
 .marker-point {
@@ -79,32 +189,89 @@ html[data-theme="neo-dark"] .map-canvas-area {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-/* Поп-ап карточка заведения на карте */
+/* Точка пользователя GPS */
+.user-gps-marker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 30;
+  pointer-events: none;
+}
+
+.user-gps-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #2196F3;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.6);
+  animation: gpsPulse 2s infinite;
+}
+
+@keyframes gpsPulse {
+  0% { box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.7); }
+  70% { box-shadow: 0 0 0 16px rgba(33, 150, 243, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(33, 150, 243, 0); }
+}
+
+/* =========================================================================
+   КАРТОЧКА ОБЪЕКТА И ЭЛЕМЕНТЫ УПРАВЛЕНИЯ
+   ========================================================================= */
 .map-popup-card {
   position: absolute;
-  bottom: 24px;
-  left: 24px;
+  bottom: 20px;
+  left: 20px;
   width: 320px;
+  max-width: calc(100% - 40px);
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: var(--space-4);
   box-shadow: var(--shadow-elevated);
-  z-index: 30;
+  z-index: 40;
   animation: slideUpFade 0.25s ease forwards;
 }
 
-@keyframes slideUpFade {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+@media (max-width: 768px) {
+  .map-popup-card {
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    width: auto;
+  }
 }
 
 .map-controls-bar {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  top: 14px;
+  right: 14px;
   display: flex;
   flex-direction: column;
   gap: 8px;
   z-index: 30;
+}
+
+.map-ctrl-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.map-ctrl-btn:hover {
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.map-ctrl-btn:active {
+  transform: scale(0.92);
 }
