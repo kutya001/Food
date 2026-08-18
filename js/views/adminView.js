@@ -109,30 +109,33 @@ export class AdminView {
                 <th>Наименование заведения</th>
                 <th>Тип</th>
                 <th>Адрес</th>
-                <th>Координаты</th>
+                <th>Контакты и Режим</th>
                 <th>Статус</th>
                 <th style="text-align: right;">Модерация</th>
               </tr>
             </thead>
             <tbody>
-              ${list.map(est => `
-                <tr>
-                  <td><strong>🏠 ${est.name}</strong></td>
-                  <td><span class="badge badge-secondary">${est.type}</span></td>
-                  <td>${est.address}</td>
-                  <td><small class="text-muted">${est.coordinates.lat}, ${est.coordinates.lng}</small></td>
-                  <td>
-                    <span class="badge ${est.status === 'active' ? 'badge-success' : 'badge-warning'}">
-                      ${est.status === 'active' ? 'Активно' : 'На модерации'}
-                    </span>
-                  </td>
-                  <td style="text-align: right;">
-                    <button class="btn btn-secondary btn-sm btn-toggle-est-status" data-est-id="${est.id}">
-                      ${est.status === 'active' ? '⏸️ Приостановить' : '✅ Активировать'}
-                    </button>
-                  </td>
-                </tr>
-              `).join('')}
+              ${list.map(est => {
+                const isActive = est.status === 'active' || est.status === 'open';
+                return `
+                  <tr>
+                    <td><strong>${est.icon || '🏠'} ${est.name}</strong></td>
+                    <td><span class="badge badge-secondary">${est.category || est.type || 'Общепит'}</span></td>
+                    <td>${est.address || 'г. Бишкек'}</td>
+                    <td><small class="text-muted">📞 ${est.phone || '—'} · ⏰ ${est.openHours || '09:00-22:00'}</small></td>
+                    <td>
+                      <span class="badge ${isActive ? 'badge-success' : 'badge-warning'}">
+                        ${isActive ? 'Активно' : 'На модерации'}
+                      </span>
+                    </td>
+                    <td style="text-align: right;">
+                      <button class="btn btn-secondary btn-sm btn-toggle-est-status" data-est-id="${est.id}">
+                        ${isActive ? '⏸️ Приостановить' : '✅ Активировать'}
+                      </button>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
             </tbody>
           </table>
         </div>
@@ -142,9 +145,10 @@ export class AdminView {
         btn.addEventListener('click', () => {
           const est = db.getById('establishments', btn.dataset.estId);
           if (est) {
-            const nextStatus = est.status === 'active' ? 'pending' : 'active';
+            const currentActive = est.status === 'active' || est.status === 'open';
+            const nextStatus = currentActive ? 'suspended' : 'active';
             db.update('establishments', est.id, { status: nextStatus });
-            showToast(`Статус заведения «${est.name}» изменён на: ${nextStatus}`, 'info');
+            showToast(`Статус заведения «${est.name}» изменён на: ${nextStatus === 'active' ? 'Активно' : 'Приостановлено'}`, 'info');
             this.renderCurrentTab(container);
           }
         });
@@ -161,25 +165,32 @@ export class AdminView {
                 <th>Сотрудников</th>
                 <th>Месячный лимит</th>
                 <th>Остаток баланса</th>
-                <th>Договор до</th>
+                <th>Контакты</th>
                 <th style="text-align: right;">Управление</th>
               </tr>
             </thead>
             <tbody>
-              ${orgs.map(org => `
-                <tr>
-                  <td><strong>🏢 ${org.name}</strong></td>
-                  <td>${org.employeeCount} чел.</td>
-                  <td><strong>${org.budgetMonthly} сом</strong></td>
-                  <td><strong style="color: var(--color-success);">${org.currentBalance} сом</strong></td>
-                  <td>${org.contractEnd}</td>
-                  <td style="text-align: right;">
-                    <button class="btn btn-secondary btn-sm btn-topup-org" data-org-id="${org.id}">
-                      💳 Пополнить лимит (+10 000 сом)
-                    </button>
-                  </td>
-                </tr>
-              `).join('')}
+              ${orgs.map(org => {
+                const limit = org.monthlyLimit || org.budgetMonthly || 120000;
+                const balance = org.currentBalance !== undefined ? org.currentBalance : (limit - (org.monthlySpent || 0));
+                const employees = org.employeesCount || org.employeeCount || 45;
+                const contact = org.contactPerson || org.address || 'г. Бишкек';
+
+                return `
+                  <tr>
+                    <td><strong>🏢 ${org.name}</strong></td>
+                    <td>${employees} чел.</td>
+                    <td><strong>${limit} сом</strong></td>
+                    <td><strong style="color: var(--color-success);">${balance} сом</strong></td>
+                    <td><small class="text-muted">${contact}</small></td>
+                    <td style="text-align: right;">
+                      <button class="btn btn-secondary btn-sm btn-topup-org" data-org-id="${org.id}">
+                        💳 Пополнить лимит (+10 000 сом)
+                      </button>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
             </tbody>
           </table>
         </div>
@@ -189,8 +200,10 @@ export class AdminView {
         btn.addEventListener('click', () => {
           const org = db.getById('organizations', btn.dataset.orgId);
           if (org) {
-            db.update('organizations', org.id, { currentBalance: org.currentBalance + 10000 });
-            showToast(`Лимит компании «${org.name}» пополнен на +10 000 сом!`, 'success');
+            const currentBal = org.currentBalance !== undefined ? org.currentBalance : ((org.monthlyLimit || 120000) - (org.monthlySpent || 0));
+            const newBal = currentBal + 10000;
+            db.update('organizations', org.id, { currentBalance: newBal });
+            showToast(`Лимит компании «${org.name}» пополнен на +10 000 сом! (Баланс: ${newBal} сом)`, 'success');
             this.renderCurrentTab(container);
           }
         });
