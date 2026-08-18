@@ -1,8 +1,11 @@
 /**
- * MOBILE.CSS — Полноценные стили адаптивной мобильной версии (Bottom Bar, Drawer, Шторки)
+ * MOBILE.CSS — Комплексная адаптивная мобильная дизайн-система FoodFlow
+ * Соответствует Apple HIG (iOS) и Google Material Design 3 (Android)
  */
 
-/* Утилиты видимости */
+/* =========================================================================
+   1. БАЗОВАЯ МОБИЛЬНАЯ ЭРГОНОМИКА И SAFE AREAS
+   ========================================================================= */
 .show-on-mobile {
   display: none !important;
 }
@@ -16,22 +19,35 @@
     display: flex !important;
   }
 
-  /* Дополнительный нижний отступ для основного контента под Bottom Bar */
+  /* Safe Area для основного контента над Bottom Bar */
   .main-content {
-    padding-bottom: 74px !important;
+    padding-bottom: calc(76px + var(--sab, 0px)) !important;
   }
 
   .site-header {
-    padding: 8px 0;
+    padding-top: calc(4px + var(--sat, 0px));
+    height: auto;
+    min-height: calc(56px + var(--sat, 0px));
   }
 
   .header-container {
     gap: 8px;
+    padding: 0 var(--space-3);
+  }
+
+  /* Кнопки и инпуты с гарантированной зоной нажатия >= 48px */
+  .btn, .input, .select {
+    min-height: 44px;
+    font-size: var(--font-size-base);
+  }
+
+  .container {
+    padding: 0 var(--space-3);
   }
 }
 
 /* =========================================================================
-   НИЖНЯЯ МОБИЛЬНАЯ ПАНЕЛЬ НАВИГАЦИИ (BOTTOM NAVIGATION BAR)
+   2. НИЖНЯЯ МОБИЛЬНАЯ ПАНЕЛЬ НАВИГАЦИИ (BOTTOM NAVIGATION BAR)
    ========================================================================= */
 .mobile-bottom-nav {
   display: none;
@@ -39,14 +55,18 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 60px;
+  height: calc(62px + var(--sab, 0px));
+  padding-bottom: var(--sab, 0px);
   background-color: var(--color-surface);
   border-top: 1px solid var(--color-border);
-  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
   z-index: 900;
   justify-content: space-around;
   align-items: center;
-  padding: 0 4px;
+  padding-left: 4px;
+  padding-right: 4px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 @media (max-width: 768px) {
@@ -62,6 +82,7 @@
   justify-content: center;
   flex: 1;
   height: 100%;
+  min-height: 48px;
   color: var(--color-text-secondary);
   text-decoration: none;
   font-size: 10px;
@@ -72,6 +93,8 @@
   transition: color var(--transition-fast), transform var(--transition-fast);
   position: relative;
   touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .mobile-nav-item:active {
@@ -83,32 +106,39 @@
 }
 
 .mobile-nav-icon {
-  font-size: 1.3rem;
+  font-size: 1.35rem;
   margin-bottom: 2px;
   line-height: 1;
+  transition: transform var(--transition-fast);
+}
+
+.mobile-nav-item.active .mobile-nav-icon {
+  transform: translateY(-2px) scale(1.1);
 }
 
 .mobile-nav-badge {
   position: absolute;
-  top: 6px;
+  top: 4px;
   right: calc(50% - 18px);
   background-color: var(--color-error);
   color: #fff;
   font-size: 10px;
-  font-weight: bold;
+  font-weight: var(--font-weight-extrabold);
   border-radius: 10px;
-  padding: 1px 5px;
-  line-height: 1;
+  padding: 1px 6px;
+  line-height: 1.2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* =========================================================================
-   БОКОВОЕ ВЫДВИЖНОЕ МЕНЮ (OFFCANVAS DRAWER)
+   3. ВЫДВИЖНОЕ МЕНЮ (OFFCANVAS DRAWER)
    ========================================================================= */
 .mobile-drawer-backdrop {
   position: fixed;
   inset: 0;
   background-color: var(--color-overlay);
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   z-index: 1100;
   opacity: 0;
   pointer-events: none;
@@ -125,16 +155,18 @@
   top: 0;
   bottom: 0;
   left: 0;
-  width: 290px;
-  max-width: 85vw;
+  width: 300px;
+  max-width: 86vw;
   background-color: var(--color-surface);
   box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
   transform: translateX(-100%);
-  transition: transform var(--transition-base);
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
   z-index: 1101;
   overflow-y: auto;
+  padding-top: var(--sat, 0px);
+  padding-bottom: var(--sab, 0px);
 }
 
 .mobile-drawer-backdrop.open .mobile-drawer-panel {
@@ -151,24 +183,25 @@
 }
 
 .mobile-drawer-body {
-  padding: var(--space-4);
+  padding: var(--space-3);
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-2);
 }
 
 .mobile-menu-link {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: 12px;
+  padding: 12px 16px;
+  min-height: 48px;
   color: var(--color-text);
   text-decoration: none;
   font-weight: var(--font-weight-bold);
   font-size: var(--font-size-sm);
   border-radius: var(--radius-md);
-  transition: background-color var(--transition-fast);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
 .mobile-menu-link:hover,
@@ -178,16 +211,196 @@
 }
 
 /* =========================================================================
-   НИЖНИЕ ШТОРКИ (BOTTOM SHEET DIALOGS)
+   4. ВЫКАТНЫЕ НИЖНИЕ ШТОРКИ (BOTTOM SHEET MODALS)
    ========================================================================= */
 @media (max-width: 768px) {
+  .modal-backdrop {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+
   .modal-dialog {
     width: 100% !important;
     max-width: 100% !important;
-    border-radius: var(--radius-xl) var(--radius-xl) 0 0 !important;
-    margin-top: auto !important;
-    margin-bottom: 0 !important;
-    max-height: 90vh !important;
+    border-radius: 24px 24px 0 0 !important;
+    margin: 0 !important;
+    max-height: 88vh !important;
     overflow-y: auto;
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.2) !important;
+    transform: translateY(100%) !important;
+    transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1) !important;
+    padding-bottom: calc(var(--space-4) + var(--sab, 0px)) !important;
+  }
+
+  .modal-backdrop.open .modal-dialog {
+    transform: translateY(0) !important;
+  }
+
+  /* Индикатор перетаскивания (Drag Handle) */
+  .modal-dialog::before {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 4px;
+    background-color: var(--color-border);
+    border-radius: 4px;
+    margin: 8px auto 4px auto;
+  }
+}
+
+/* =========================================================================
+   5. ГОРИЗОНТАЛЬНЫЙ СВАЙП ЧИПОВ И СТИКИ-ПАНЕЛИ
+   ========================================================================= */
+.category-chips {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding: 4px 2px 8px 2px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.category-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.category-chip {
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  min-height: 38px;
+  touch-action: manipulation;
+}
+
+/* =========================================================================
+   6. ПЛАВАЮЩАЯ ШТОРКА ЧЕКА В POS-ТЕРМИНАЛЕ
+   ========================================================================= */
+.pos-mobile-bar {
+  display: none;
+  position: fixed;
+  bottom: calc(62px + var(--sab, 0px));
+  left: var(--space-3);
+  right: var(--space-3);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+  z-index: 850;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  animation: bounceIn 0.3s ease;
+}
+
+@keyframes bounceIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@media (max-width: 900px) {
+  .pos-mobile-bar {
+    display: flex;
+  }
+
+  .pos-container {
+    grid-template-columns: 1fr !important;
+  }
+
+  .pos-bill-panel {
+    display: none; /* скрыта по умолчанию на мобилках, открывается по клику на плавающую плашку */
+  }
+
+  .pos-bill-panel.mobile-expanded {
+    display: flex !important;
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+    border-radius: 0;
+    margin: 0;
+    height: 100vh;
+    padding-top: var(--sat, 0px);
+    padding-bottom: var(--sab, 0px);
+  }
+}
+
+/* =========================================================================
+   7. СКЕЛЕТОННАЯ ЗАГРУЗКА (SHIMMER SKELETON EFFECT)
+   ========================================================================= */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-alt) 25%,
+    var(--color-border-subtle) 50%,
+    var(--color-surface-alt) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-card {
+  height: 280px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+}
+
+.skeleton-text {
+  height: 14px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+}
+
+.skeleton-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+
+/* =========================================================================
+   8. КАРТОЧНЫЙ ВИД ТАБЛИЦ ДЛЯ СМАРТФОНОВ (MOBILE TABLE CARDS)
+   ========================================================================= */
+@media (max-width: 768px) {
+  .warehouse-table-container {
+    border: none;
+    background: transparent;
+  }
+
+  .table-as-cards thead,
+  .corp-requests-table thead,
+  .recipe-builder-table thead {
+    display: none; /* скрываем заголовки таблиц */
+  }
+
+  .table-as-cards tbody,
+  .corp-requests-table tbody {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .table-as-cards tr,
+  .corp-requests-table tr {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-3);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .table-as-cards td,
+  .corp-requests-table td {
+    padding: 4px 0;
+    border: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 }

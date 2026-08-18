@@ -6,6 +6,7 @@ import { db } from '../state/db.js';
 import { DishDetailModal } from '../components/dishDetailModal.js';
 import { CartDrawer } from '../components/cartDrawer.js';
 import { MapComponent } from '../components/mapComponent.js';
+import { Haptics } from '../services/haptics.js';
 
 export class ShowcaseView {
   static currentViewMode = 'grid'; // 'grid' | 'map'
@@ -279,6 +280,7 @@ export class ShowcaseView {
     grid.querySelectorAll('.quick-add-to-cart').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
+        Haptics.light();
         const dishId = btn.dataset.quickId;
         const dish = db.getById('menuItems', dishId);
         const techCard = db.getById('techCards', dish?.techCardId);
@@ -299,11 +301,13 @@ export class ShowcaseView {
   static bindEvents(container) {
     // Переключение режимов: Каталог / Карта
     container.querySelector('#btn-view-grid').addEventListener('click', () => {
+      Haptics.light();
       this.currentViewMode = 'grid';
       this.render(container);
     });
 
     container.querySelector('#btn-view-map').addEventListener('click', () => {
+      Haptics.light();
       this.currentViewMode = 'map';
       this.render(container);
     });

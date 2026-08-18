@@ -8,6 +8,7 @@ import { ThemeManager } from '../theme/themeManager.js';
 import { PosPaymentModal } from '../components/posPaymentModal.js';
 import { PosShiftModal } from '../components/posShiftModal.js';
 import { showToast } from '../components/toast.js';
+import { Haptics } from '../services/haptics.js';
 
 export class PosView {
   static activeCategory = 'all';
@@ -20,6 +21,10 @@ export class PosView {
     const est = AuthManager.getActiveEstablishment() || { id: 'est_1', name: 'Столовая «Свежесть»' };
     const allDishes = db.query('menuItems', m => m.estId === est.id);
     const categories = ['all', 'Вторые блюда', 'Супы', 'Салаты', 'Бургеры', 'Стейки & Гриль'];
+
+    const totalBillCount = this.billItems.reduce((s, i) => s + i.qty, 0);
+    const rawTotal = this.billItems.reduce((sum, i) => sum + (i.retailPrice * i.qty), 0);
+    const finalTotal = Math.max(0, rawTotal - Math.round(rawTotal * (this.discountPercent / 100)));
 
     container.innerHTML = `
       <div class="container" style="max-width: 1300px;">
@@ -68,21 +73,24 @@ export class PosView {
           </div>
 
           <!-- Правая колонка: Чек заказа -->
-          <div class="pos-bill-panel">
+          <div class="pos-bill-panel" id="pos-bill-panel-el">
             <div class="pos-bill-header">
               <div style="display: flex; align-items: center; gap: 8px;">
                 <span style="font-size: 1.2rem;">🧾</span>
                 <strong>Текущий чек</strong>
               </div>
 
-              <!-- Выбор стола / с собой -->
-              <select class="select btn-sm" id="pos-table-select" style="width: auto; padding: 4px 8px;">
-                <option value="Стол №1" ${this.activeTable === 'Стол №1' ? 'selected' : ''}>Стол №1</option>
-                <option value="Стол №2" ${this.activeTable === 'Стол №2' ? 'selected' : ''}>Стол №2</option>
-                <option value="Стол №3" ${this.activeTable === 'Стол №3' ? 'selected' : ''}>Стол №3</option>
-                <option value="Стол №4" ${this.activeTable === 'Стол №4' ? 'selected' : ''}>Стол №4</option>
-                <option value="С собой" ${this.activeTable === 'С собой' ? 'selected' : ''}>🥡 С собой (На вынос)</option>
-              </select>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <!-- Выбор стола / с собой -->
+                <select class="select btn-sm" id="pos-table-select" style="width: auto; padding: 4px 8px;">
+                  <option value="Стол №1" ${this.activeTable === 'Стол №1' ? 'selected' : ''}>Стол №1</option>
+                  <option value="Стол №2" ${this.activeTable === 'Стол №2' ? 'selected' : ''}>Стол №2</option>
+                  <option value="Стол №3" ${this.activeTable === 'Стол №3' ? 'selected' : ''}>Стол №3</option>
+                  <option value="Стол №4" ${this.activeTable === 'Стол №4' ? 'selected' : ''}>Стол №4</option>
+                  <option value="С собой" ${this.activeTable === 'С собой' ? 'selected' : ''}>🥡 С собой</option>
+                </select>
+                <button class="btn btn-ghost btn-sm show-on-mobile" id="btn-close-mobile-bill" style="padding: 4px 8px; font-size: 1.2rem;">✕</button>
+              </div>
             </div>
 
             <!-- Список позиций в чеке -->
@@ -98,6 +106,57 @@ export class PosView {
                 <div style="display: flex; gap: 4px;">
                   ${[0, 5, 10, 15, 20].map(d => `
                     <button class="btn btn-secondary btn-sm ${this.discountPercent === d ? 'active' : ''}" style="padding: 2px 8px; font-size: 11px;" data-discount="${d}">
+                      ${d === 0 ? '0%' : `${d}%`}
+                    </button>
+                  `).join('')}
+                </div>
+              </div>
+
+              <!-- Суммы -->
+              <div class="pos-totals-row">
+                <span>Итого без скидки:</span>
+                <span id="pos-raw-sum">0 сом</span>
+              </div>
+              <div class="pos-totals-row" style="color: var(--color-warning);">
+                <span>Скидка:</span>
+                <span id="pos-discount-sum">0 сом</span>
+              </div>
+              <div class="pos-totals-row final">
+                <span>К оплате:</span>
+                <span id="pos-final-sum" style="color: var(--color-primary);">0 сом</span>
+              </div>
+
+              <!-- Кнопки действий -->
+              <div style="display: grid; grid-template-columns: 1fr 2fr; gap: var(--space-2); margin-top: var(--space-2);">
+                <button class="btn btn-secondary" id="btn-clear-pos-bill" style="min-height: 48px;">
+                  🗑️ Очистить
+                </button>
+                <button class="btn btn-accent btn-lg" id="btn-open-pos-payment" style="min-height: 48px; font-size: var(--font-size-md);">
+                  💳 Оплатить чек →
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Мобильная плавающая плашка чека -->
+        ${totalBillCount > 0 ? `
+          <div class="pos-mobile-bar" id="btn-pos-mobile-bar">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 1.3rem;">🧾</span>
+              <div>
+                <strong>Чек: ${totalBillCount} поз.</strong>
+                <div class="text-xs text-muted">${this.activeTable}</div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <strong style="color: var(--color-primary); font-size: 1.15rem;">${finalTotal} сом</strong>
+              <span class="btn btn-accent btn-sm">Открыть →</span>
+            </div>
+          </div>
+        ` : ''}
+      </div>
+    `;
                       ${d === 0 ? '0%' : d + '%'}
                     </button>
                   `).join('')}
@@ -323,36 +382,61 @@ export class PosView {
     });
 
     // Оплатить чек
-    container.querySelector('#btn-pay-pos-bill').addEventListener('click', () => {
-      if (this.billItems.length === 0) {
-        showToast('Чек пуст! Добавьте блюда для пробития оплаты.', 'warning');
-        return;
-      }
+    const payBtn = container.querySelector('#btn-open-pos-payment') || container.querySelector('#btn-pay-pos-bill');
+    if (payBtn) {
+      payBtn.addEventListener('click', () => {
+        if (this.billItems.length === 0) {
+          showToast('Чек пуст! Добавьте блюда для пробития оплаты.', 'warning');
+          return;
+        }
 
-      const rawTotal = this.billItems.reduce((sum, i) => sum + (i.retailPrice * i.qty), 0);
-      const discountAmount = Math.round(rawTotal * (this.discountPercent / 100));
-      const finalTotal = Math.max(0, rawTotal - discountAmount);
+        const rawTotal = this.billItems.reduce((sum, i) => sum + (i.retailPrice * i.qty), 0);
+        const discountAmount = Math.round(rawTotal * (this.discountPercent / 100));
+        const finalTotal = Math.max(0, rawTotal - discountAmount);
 
-      PosPaymentModal.open({
-        items: this.billItems,
-        table: this.activeTable,
-        rawTotal: rawTotal,
-        discountPercent: this.discountPercent,
-        totalSum: finalTotal
-      }, () => {
-        this.billItems = [];
-        this.discountPercent = 0;
-        this.renderBill(container);
+        Haptics.medium();
+        PosPaymentModal.open({
+          items: this.billItems,
+          table: this.activeTable,
+          rawTotal: rawTotal,
+          discountPercent: this.discountPercent,
+          totalSum: finalTotal
+        }, () => {
+          this.billItems = [];
+          this.discountPercent = 0;
+          this.render(container);
+        });
       });
-    });
+    }
+
+    // Мобильная плавающая плашка чека (открытие шторки)
+    const mobileBar = container.querySelector('#btn-pos-mobile-bar');
+    const billPanel = container.querySelector('#pos-bill-panel-el');
+    if (mobileBar && billPanel) {
+      mobileBar.addEventListener('click', () => {
+        Haptics.light();
+        billPanel.classList.add('mobile-expanded');
+      });
+    }
+
+    // Закрытие мобильной шторки чека
+    const closeMobileBillBtn = container.querySelector('#btn-close-mobile-bill');
+    if (closeMobileBillBtn && billPanel) {
+      closeMobileBillBtn.addEventListener('click', () => {
+        Haptics.light();
+        billPanel.classList.remove('mobile-expanded');
+      });
+    }
 
     // X-отчёт
     container.querySelector('#btn-pos-x-report').addEventListener('click', () => {
+      Haptics.light();
       PosShiftModal.open('x_report');
     });
 
     // Z-отчёт
     container.querySelector('#btn-pos-z-report').addEventListener('click', () => {
+      Haptics.light();
       PosShiftModal.open('z_report', () => {
         this.render(container);
       });

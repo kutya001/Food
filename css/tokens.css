@@ -54,9 +54,18 @@
   --transition-base: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-theme: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 
+  /* Безопасные зоны (Safe Areas iOS / Android) */
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+
+  /* Touch-таргеты (Material 3 & Apple HIG) */
+  --touch-target-min: 48px;
+
   /* Высоты элементов */
   --header-height: 64px;
-  --bottom-nav-height: 60px;
+  --bottom-nav-height: 62px;
   --max-content-width: 1280px;
 
   /* Z-индексы */

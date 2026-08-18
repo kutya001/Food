@@ -97,7 +97,7 @@ export class BusinessWarehouseView {
 
         <!-- Таблица остатков -->
         <div class="warehouse-table-container">
-          <table class="table" style="margin: 0;">
+          <table class="table table-as-cards" style="margin: 0;">
             <thead>
               <tr>
                 <th>Наименование сырья</th>

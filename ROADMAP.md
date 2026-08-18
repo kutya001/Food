@@ -160,6 +160,12 @@
   - [x] Определение геолокации (GPS Geolocation API), расчет дистанции в км (формула гаверсинусов) и фильтр «Поблизости».
   - [x] Пульсирующие световые маркеры статусов `🟢 Открыто` и подробная карточка заведения со средним чеком в сомах.
   - [x] Адаптация палитры карты под все 5 тем оформления (`fresh`, `appetite`, `neo-dark`, `corporate`, `premium`).
+- [x] **Этап D: Стандарты Мобильного UX/UI (Apple HIG & Google Material Design 3):**
+  - [x] 8-Point Grid System и Safe Area Insets (`env(safe-area-inset-top)`, `env(safe-area-inset-bottom)`).
+  - [x] Тактильный виброотклик Haptic Feedback Service (`js/services/haptics.js`).
+  - [x] Мобильный POS-терминал с плавающим сворачиваемым чеком и крупными кнопками.
+  - [x] Карточный вид адаптивных таблиц (`.table-as-cards`) для Склада, Заявок и Меню.
+  - [x] Shimmer-скелетоны загрузки, дружелюбные Empty States и доступность a11y WCAG 2.1 AA.
 
 ---
 

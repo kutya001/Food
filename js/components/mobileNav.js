@@ -1,15 +1,18 @@
 /**
  * MOBILE-NAV.JS — Компонент нижней панели навигации (Bottom Navigation Bar) и бокового Drawer
+ * Стандарты Apple HIG (iOS) и Google Material Design 3 (Android) с тактильным откликом
  */
 
-import { AuthManager, ROLE_ACCESS_MATRIX } from '../state/auth.js';
+import { AuthManager } from '../state/auth.js';
 import { ThemeManager, THEMES } from '../theme/themeManager.js';
 import { CartDrawer } from './cartDrawer.js';
 import { UserNutritionModal } from './userNutritionModal.js';
 import { AuthModal } from './authModal.js';
-import { Router } from '../router.js';
+import { Haptics } from '../services/haptics.js';
 
 export class MobileNav {
+  static isListenersInitialized = false;
+
   static render(container) {
     const user = AuthManager.getActiveUser();
     const role = user?.role || 'client';
@@ -78,28 +81,47 @@ export class MobileNav {
   }
 
   static bindEvents(container) {
+    // Табы с тактильным откликом
+    container.querySelectorAll('.mobile-nav-item').forEach(item => {
+      item.addEventListener('click', () => {
+        Haptics.light();
+      });
+    });
+
     // Корзина
     const cartBtn = container.querySelector('#mobile-nav-cart-btn');
     if (cartBtn) {
-      cartBtn.addEventListener('click', () => CartDrawer.open());
+      cartBtn.addEventListener('click', () => {
+        Haptics.medium();
+        CartDrawer.open();
+      });
     }
 
     // КБЖУ
     const nutrBtn = container.querySelector('#mobile-nav-nutrition-btn');
     if (nutrBtn) {
-      nutrBtn.addEventListener('click', () => UserNutritionModal.open());
+      nutrBtn.addEventListener('click', () => {
+        Haptics.light();
+        UserNutritionModal.open();
+      });
     }
 
     // Профиль / Авторизация
     const profBtn = container.querySelector('#mobile-nav-profile-btn');
     if (profBtn) {
-      profBtn.addEventListener('click', () => AuthModal.open('demo'));
+      profBtn.addEventListener('click', () => {
+        Haptics.light();
+        AuthModal.open('demo');
+      });
     }
 
     // Меню «Ещё» (Drawer)
     const moreBtn = container.querySelector('#mobile-nav-more-btn');
     if (moreBtn) {
-      moreBtn.addEventListener('click', () => this.openDrawer());
+      moreBtn.addEventListener('click', () => {
+        Haptics.medium();
+        this.openDrawer();
+      });
     }
 
     // Обновление бейджа корзины и слушатели
@@ -136,45 +158,74 @@ export class MobileNav {
     }
 
     const user = AuthManager.getActiveUser();
-    const currentTheme = ThemeManager.getCurrentTheme();
+    const currentTheme = ThemeManager.getTheme();
 
     backdrop.innerHTML = `
-      <div class="mobile-drawer-panel">
+      <div class="mobile-drawer-panel" role="dialog" aria-modal="true">
         <div class="mobile-drawer-header">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="font-size: 1.6rem;">${user?.icon || '👤'}</span>
+          <div style="display: flex; align-items: center; gap: var(--space-2);">
+            <div style="width: 36px; height: 36px; border-radius: var(--radius-sm); background: var(--color-primary); color: #fff; display: grid; place-items: center; font-size: 1.2rem;">
+              🍲
+            </div>
             <div>
-              <strong style="font-size: var(--font-size-sm);">${user?.name || 'Пользователь'}</strong>
-              <div class="text-xs text-muted">${user?.roleName || 'B2C'}</div>
+              <div style="font-weight: var(--font-weight-extrabold); font-size: var(--font-size-md);">FoodFlow</div>
+              <div class="text-xs text-muted">Мобильная версия</div>
             </div>
           </div>
-          <button class="modal-close-btn" id="close-mobile-drawer">✕</button>
+          <button class="btn btn-ghost btn-sm" id="close-drawer-btn" style="font-size: 1.2rem; min-height: 44px;">✕</button>
         </div>
 
         <div class="mobile-drawer-body">
-          <!-- Меню переходов -->
-          <div style="display: flex; flex-direction: column; gap: 4px;">
-            <a href="#/showcase" class="mobile-menu-link drawer-nav-link">🍲 Витрина блюд</a>
-            ${user?.role === 'business' || user?.role === 'admin' ? '<a href="#/business" class="mobile-menu-link drawer-nav-link">🍳 Кабинет общепита</a>' : ''}
-            ${user?.role === 'pos' || user?.role === 'admin' ? '<a href="#/pos" class="mobile-menu-link drawer-nav-link">💻 POS Касса</a>' : ''}
-            ${user?.role === 'corporate' || user?.role === 'admin' ? '<a href="#/corporate" class="mobile-menu-link drawer-nav-link">🏢 Корпоративный портал</a>' : ''}
-            ${user?.role === 'admin' ? '<a href="#/admin" class="mobile-menu-link drawer-nav-link">🛡️ Панель администратора</a>' : ''}
-            <a href="#/db-viewer" class="mobile-menu-link drawer-nav-link">💾 База данных Mock-DB</a>
+          <!-- Карточка активного профиля -->
+          <div style="background: var(--color-surface-alt); padding: var(--space-3); border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 1.4rem;">${user?.icon || '👤'}</span>
+                <div>
+                  <div style="font-weight: var(--font-weight-bold); font-size: var(--font-size-sm);">${user?.name || 'Гость'}</div>
+                  <div class="text-xs text-muted">${user?.roleName || 'Клиент (B2C)'}</div>
+                </div>
+              </div>
+              <button class="btn btn-secondary btn-sm" id="drawer-switch-user-btn">
+                Сменить
+              </button>
+            </div>
           </div>
 
-          <hr style="border:none; border-top:1px solid var(--color-border); margin:4px 0;">
+          <!-- Разделы навигации -->
+          <div style="font-size: var(--font-size-xs); font-weight: bold; text-transform: uppercase; color: var(--color-text-secondary); margin-top: 8px;">
+            Навигация
+          </div>
+          <a href="#/showcase" class="mobile-menu-link drawer-nav-link">
+            <span>🍲</span> Каталог блюд и заведений
+          </a>
+          <a href="#/business" class="mobile-menu-link drawer-nav-link">
+            <span>🍳</span> Кабинет общепита (Склад, ТТК, P&L)
+          </a>
+          <a href="#/pos" class="mobile-menu-link drawer-nav-link">
+            <span>💻</span> POS-терминал кассира
+          </a>
+          <a href="#/corporate" class="mobile-menu-link drawer-nav-link">
+            <span>🏢</span> Корпоративный портал (B2B)
+          </a>
+          <a href="#/admin" class="mobile-menu-link drawer-nav-link">
+            <span>🛡️</span> Панель администратора
+          </a>
+          <a href="#/db-viewer" class="mobile-menu-link drawer-nav-link">
+            <span>🗄️</span> Просмотр базы данных
+          </a>
 
-          <!-- Быстрые действия -->
-          <div style="display: flex; flex-direction: column; gap: 8px;">
-            <button class="btn btn-secondary btn-sm" id="drawer-theme-btn" style="justify-content: flex-start;">
-              🎨 Тема оформления (${THEMES[currentTheme]?.name || currentTheme})
-            </button>
-            <button class="btn btn-secondary btn-sm" id="drawer-switch-role-btn" style="justify-content: flex-start;">
-              🔄 Сменить профиль / роль
-            </button>
-            <button class="btn btn-secondary btn-sm" id="drawer-logout-btn" style="justify-content: flex-start; color: var(--color-error);">
-              🚪 Выйти из системы
-            </button>
+          <!-- Темизация интерфейса -->
+          <div style="font-size: var(--font-size-xs); font-weight: bold; text-transform: uppercase; color: var(--color-text-secondary); margin-top: 12px;">
+            Оформление (5 тем)
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+            ${Object.entries(THEMES).map(([key, t]) => `
+              <button class="btn btn-secondary btn-sm btn-drawer-theme ${key === currentTheme ? 'active' : ''}" data-theme="${key}" style="justify-content: flex-start; gap: 6px; padding: 8px 10px;">
+                <span style="width: 12px; height: 12px; border-radius: 3px; background: ${t.primary}; display: inline-block;"></span>
+                <span>${t.name}</span>
+              </button>
+            `).join('')}
           </div>
         </div>
       </div>
@@ -182,41 +233,40 @@ export class MobileNav {
 
     setTimeout(() => backdrop.classList.add('open'), 10);
 
-    backdrop.querySelector('#close-mobile-drawer').addEventListener('click', () => {
+    const closeDrawer = () => {
       backdrop.classList.remove('open');
-      setTimeout(() => backdrop.remove(), 250);
+      setTimeout(() => backdrop.remove(), 300);
+    };
+
+    backdrop.querySelector('#close-drawer-btn').addEventListener('click', () => {
+      Haptics.light();
+      closeDrawer();
     });
 
     backdrop.querySelectorAll('.drawer-nav-link').forEach(link => {
       link.addEventListener('click', () => {
-        backdrop.classList.remove('open');
-        setTimeout(() => backdrop.remove(), 250);
+        Haptics.light();
+        closeDrawer();
       });
     });
 
-    backdrop.querySelector('#drawer-theme-btn').addEventListener('click', () => {
-      backdrop.classList.remove('open');
-      setTimeout(() => {
-        backdrop.remove();
-        ThemeManager.openThemeModal();
-      }, 250);
+    backdrop.querySelector('#drawer-switch-user-btn').addEventListener('click', () => {
+      Haptics.light();
+      closeDrawer();
+      setTimeout(() => AuthModal.open('demo'), 350);
     });
 
-    backdrop.querySelector('#drawer-switch-role-btn').addEventListener('click', () => {
-      backdrop.classList.remove('open');
-      setTimeout(() => {
-        backdrop.remove();
-        AuthModal.open('demo');
-      }, 250);
+    backdrop.querySelectorAll('.btn-drawer-theme').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const theme = btn.dataset.theme;
+        ThemeManager.setTheme(theme);
+        Haptics.selection();
+        closeDrawer();
+      });
     });
 
-    backdrop.querySelector('#drawer-logout-btn').addEventListener('click', () => {
-      AuthManager.logout();
-      backdrop.classList.remove('open');
-      setTimeout(() => {
-        backdrop.remove();
-        Router.navigate('showcase');
-      }, 250);
+    backdrop.addEventListener('click', (e) => {
+      if (e.target === backdrop) closeDrawer();
     });
   }
 }
