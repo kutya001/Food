@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="fresh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FoodFlow — Платформа Общепита (B2B / B2C)</title>
+  <meta name="description" content="Универсальная платформа для общепита: складской учет, техкарты, POS-терминал, онлайн-витрина, B2B-заявки и 5 визуальных тем">
+  
+  <!-- Защита от FOUC (Flash of Unstyled Content) — выполняется до рендеринга DOM -->
+  <script>
+    (function() {
+      try {
+        var savedTheme = localStorage.getItem('food_app_theme') || 'fresh';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'fresh');
+      }
+    })();
+  </script>
+
+  <!-- Стили дизайн-системы -->
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+</head>
+<body>
+
+  <!-- Точка монтирования шапки -->
+  <div id="header-root"></div>
+
+  <!-- Основной динамический контент SPA -->
+  <main id="app-root" class="main-content" role="main"></main>
+
+  <!-- Контейнеры модальных окон и уведомлений -->
+  <div id="modal-root"></div>
+  <div id="toast-root"></div>
+
+  <!-- Главный модуль логики приложения -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

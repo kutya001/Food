@@ -1,0 +1,290 @@
+/**
+ * TOKENS.CSS — Дизайн-система и 5 цветовых тем
+ * Соответствует ТЗ и документу "Дизайн и Цветовая Политика.md"
+ */
+
+/* ==========================================================================
+   1. ГЛОБАЛЬНЫЕ КОНСТАНТЫ (НЕ МЕНЯЮТСЯ ОТ ТЕМЫ)
+   ========================================================================== */
+:root {
+  /* Типографика */
+  --font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.8125rem;  /* 13px */
+  --font-size-base: 0.875rem; /* 14px */
+  --font-size-md: 1rem;       /* 16px */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.375rem;   /* 22px */
+  --font-size-2xl: 1.75rem;   /* 28px */
+  --font-size-3xl: 2.25rem;   /* 36px */
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+
+  --line-height-tight: 1.2;
+  --line-height-base: 1.45;
+  --line-height-relaxed: 1.6;
+
+  /* Радиусы скругления */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Отступы */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Анимации и переходы */
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-theme: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+
+  /* Высоты элементов */
+  --header-height: 64px;
+  --bottom-nav-height: 60px;
+  --max-content-width: 1280px;
+
+  /* Z-индексы */
+  --z-base: 1;
+  --z-sticky: 100;
+  --z-drawer: 200;
+  --z-modal-backdrop: 300;
+  --z-modal: 310;
+  --z-toast: 400;
+  --z-tooltip: 500;
+}
+
+/* ==========================================================================
+   2. СТАТУСНЫЕ ЦВЕТА И DATA-VIZ (ДЕФОЛТ / СВЕТЛЫЕ ТЕМЫ)
+   ========================================================================== */
+:root {
+  --color-success: #1F9D55;
+  --color-success-bg: #E6F5EC;
+  --color-warning: #D98E04;
+  --color-warning-bg: #FCF3DE;
+  --color-error: #DC3545;
+  --color-error-bg: #FBE7E9;
+  --color-info: #2E7CD6;
+  --color-info-bg: #E7F1FC;
+
+  /* Data-Viz Палитра (8 цветов для графиков) */
+  --data-viz-1: #2E7CD6;
+  --data-viz-2: #1F9D55;
+  --data-viz-3: #E8630A;
+  --data-viz-4: #8A4FC0;
+  --data-viz-5: #D64560;
+  --data-viz-6: #12A5A0;
+  --data-viz-7: #B58900;
+  --data-viz-8: #7A8699;
+}
+
+/* ==========================================================================
+   3. ТЕМА 1: FRESH (Свежий рынок) — ДЕФОЛТ
+   ========================================================================== */
+:root,
+html[data-theme="fresh"] {
+  --theme-key: 'fresh';
+  --theme-name: 'Свежий рынок';
+
+  --color-primary: #22A05B;
+  --color-primary-hover: #1B8A4E;
+  --color-primary-pressed: #157347;
+  --color-primary-light: #EDF5EE;
+  --color-on-primary: #FFFFFF;
+
+  --color-accent: #FF8A3D;
+  --color-accent-hover: #E87528;
+  --color-accent-pressed: #D26218;
+  --color-accent-light: #FFF1E8;
+  --color-on-accent: #3D1F00;
+
+  --color-bg: #F6F9F3;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #EDF3EA;
+  --color-border: #DCE5D7;
+  --color-border-subtle: #E8EFE4;
+
+  --color-text: #1C2B22;
+  --color-text-secondary: #5F7266;
+  --color-text-muted: #8A9E92;
+  --color-text-inverse: #FFFFFF;
+
+  --color-overlay: rgba(28, 43, 34, 0.45);
+  --shadow-card: 0 2px 6px rgba(28, 43, 34, 0.04), 0 10px 24px rgba(28, 43, 34, 0.06);
+  --shadow-elevated: 0 12px 36px rgba(28, 43, 34, 0.12);
+}
+
+/* ==========================================================================
+   4. ТЕМА 2: APPETITE (Тёплый аппетит)
+   ========================================================================== */
+html[data-theme="appetite"] {
+  --theme-key: 'appetite';
+  --theme-name: 'Тёплый аппетит';
+
+  --color-primary: #E63946;
+  --color-primary-hover: #D62F3C;
+  --color-primary-pressed: #C22B37;
+  --color-primary-light: #FDECEA;
+  --color-on-primary: #FFFFFF;
+
+  --color-accent: #F8A24B;
+  --color-accent-hover: #E28C35;
+  --color-accent-pressed: #CC7923;
+  --color-accent-light: #FFF4EB;
+  --color-on-accent: #4A2B12;
+
+  --color-bg: #FFF6EE;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #FBEADF;
+  --color-border: #F0DCCB;
+  --color-border-subtle: #F7E9DE;
+
+  --color-text: #33221B;
+  --color-text-secondary: #8A7364;
+  --color-text-muted: #A89587;
+  --color-text-inverse: #FFFFFF;
+
+  --color-overlay: rgba(51, 34, 27, 0.45);
+  --shadow-card: 0 2px 6px rgba(51, 34, 27, 0.04), 0 10px 24px rgba(51, 34, 27, 0.06);
+  --shadow-elevated: 0 12px 36px rgba(51, 34, 27, 0.12);
+}
+
+/* ==========================================================================
+   5. ТЕМА 3: NEO-DARK (Нео-дарк) — ТЁМНАЯ ТЕМА ДЛЯ POS И ДАШБОРДОВ
+   ========================================================================== */
+html[data-theme="neo-dark"] {
+  --theme-key: 'neo-dark';
+  --theme-name: 'Нео-дарк';
+
+  --color-primary: #C2F04C;
+  --color-primary-hover: #D0F56E;
+  --color-primary-pressed: #A8D93A;
+  --color-primary-light: #253315;
+  --color-on-primary: #0F141A;
+
+  --color-accent: #C2F04C;
+  --color-accent-hover: #D0F56E;
+  --color-accent-pressed: #A8D93A;
+  --color-accent-light: #253315;
+  --color-on-accent: #0F141A;
+
+  --color-bg: #0F141A;
+  --color-surface: #1B242E;
+  --color-surface-alt: #242F3B;
+  --color-border: #2E3A47;
+  --color-border-subtle: #232D38;
+
+  --color-text: #F2F6FA;
+  --color-text-secondary: #93A1B3;
+  --color-text-muted: #6B7A8C;
+  --color-text-inverse: #0F141A;
+
+  --color-overlay: rgba(0, 0, 0, 0.75);
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.45);
+  --shadow-elevated: 0 16px 40px rgba(0, 0, 0, 0.65);
+
+  /* Адаптированные статусные цвета под тёмный фон */
+  --color-success: #3DDC84;
+  --color-success-bg: #16321F;
+  --color-warning: #FFC94D;
+  --color-warning-bg: #3A2E12;
+  --color-error: #FF6B6B;
+  --color-error-bg: #3A1A1C;
+  --color-info: #6FB3FF;
+  --color-info-bg: #14283D;
+
+  /* Data-Viz Палитра с повышенной яркостью (+15%) для тёмной темы */
+  --data-viz-1: #5B9CF6;
+  --data-viz-2: #3DDC84;
+  --data-viz-3: #FA7D2A;
+  --data-viz-4: #A76DE0;
+  --data-viz-5: #EB657E;
+  --data-viz-6: #25C8C3;
+  --data-viz-7: #D9A710;
+  --data-viz-8: #9AABC0;
+}
+
+/* ==========================================================================
+   6. ТЕМА 4: CORPORATE (Корпоративный баланс)
+   ========================================================================== */
+html[data-theme="corporate"] {
+  --theme-key: 'corporate';
+  --theme-name: 'Корпоративный баланс';
+
+  --color-primary: #0F7B84;
+  --color-primary-hover: #0C6A72;
+  --color-primary-pressed: #0B5F66;
+  --color-primary-light: #E3F1F2;
+  --color-on-primary: #FFFFFF;
+
+  --color-accent: #F5A524;
+  --color-accent-hover: #E09418;
+  --color-accent-pressed: #C98210;
+  --color-accent-light: #FEF6EB;
+  --color-on-accent: #3A2606;
+
+  --color-bg: #F3F8F9;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #E7F0F2;
+  --color-border: #D6E4E7;
+  --color-border-subtle: #E2ECEE;
+
+  --color-text: #16303A;
+  --color-text-secondary: #5C7683;
+  --color-text-muted: #829BA8;
+  --color-text-inverse: #FFFFFF;
+
+  --color-overlay: rgba(22, 48, 58, 0.45);
+  --shadow-card: 0 2px 6px rgba(22, 48, 58, 0.04), 0 10px 24px rgba(22, 48, 58, 0.06);
+  --shadow-elevated: 0 12px 36px rgba(22, 48, 58, 0.12);
+}
+
+/* ==========================================================================
+   7. ТЕМА 5: PREMIUM (Гастро-премиум)
+   ========================================================================== */
+html[data-theme="premium"] {
+  --theme-key: 'premium';
+  --theme-name: 'Гастро-премиум';
+
+  --color-primary: #6D2144;
+  --color-primary-hover: #5F1C3B;
+  --color-primary-pressed: #521732;
+  --color-primary-light: #F5E8EE;
+  --color-on-primary: #FFFFFF;
+
+  --color-accent: #D2A24C;
+  --color-accent-hover: #BE8E39;
+  --color-accent-pressed: #A87B2B;
+  --color-accent-light: #FAF4E9;
+  --color-on-accent: #3A2606;
+
+  --color-bg: #FBF6F0;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F3E9DC;
+  --color-border: #E7D9C6;
+  --color-border-subtle: #EFE4D5;
+
+  --color-text: #2E1A22;
+  --color-text-secondary: #8A6F7C;
+  --color-text-muted: #A8909D;
+  --color-text-inverse: #FFFFFF;
+
+  --color-overlay: rgba(46, 26, 34, 0.45);
+  --shadow-card: 0 2px 6px rgba(46, 26, 34, 0.04), 0 10px 24px rgba(46, 26, 34, 0.06);
+  --shadow-elevated: 0 12px 36px rgba(46, 26, 34, 0.12);
+}
