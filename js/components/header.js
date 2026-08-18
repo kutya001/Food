@@ -4,6 +4,7 @@
 
 import { ThemeManager, THEMES } from '../theme/themeManager.js';
 import { AuthManager } from '../state/auth.js';
+import { CartDrawer } from './cartDrawer.js';
 import { showToast } from './toast.js';
 
 export const ROLES = {
@@ -88,9 +89,11 @@ export class Header {
     const cartBtn = container.querySelector('#header-cart-btn');
     if (cartBtn) {
       cartBtn.addEventListener('click', () => {
-        showToast('Корзина будет развернута на этапе 3 (Витрина и оформление)', 'info');
+        CartDrawer.open();
       });
     }
+
+    CartDrawer.updateHeaderBadge();
 
     // Слушатель смены темы
     window.addEventListener('themeChanged', (e) => {

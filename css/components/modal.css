@@ -1,0 +1,150 @@
+/**
+ * MODAL.CSS — Стили модального окна карточки блюда, КБЖУ нутриентов и состава
+ */
+
+.dish-detail-dialog {
+  max-width: 640px;
+}
+
+.dish-detail-hero {
+  height: 180px;
+  background: var(--color-surface-alt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 5rem;
+  position: relative;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.dish-detail-body {
+  padding: var(--space-6);
+}
+
+/* Сетка КБЖУ нутриентов с прогресс-барами */
+.kbju-matrix-card {
+  background-color: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin: var(--space-4) 0;
+}
+
+.kbju-matrix-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+  text-align: center;
+}
+
+.kbju-metric-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.kbju-value {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-extrabold);
+  color: var(--color-text);
+  margin-top: 2px;
+}
+
+.kbju-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+}
+
+.kbju-progress-bar {
+  width: 100%;
+  height: 6px;
+  background-color: var(--color-border);
+  border-radius: var(--radius-full);
+  margin-top: 6px;
+  overflow: hidden;
+}
+
+.kbju-progress-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+}
+
+.kbju-fill-calories { background-color: var(--color-primary); }
+.kbju-fill-protein { background-color: var(--data-viz-1); }
+.kbju-fill-fat { background-color: var(--data-viz-3); }
+.kbju-fill-carbs { background-color: var(--data-viz-7); }
+
+/* Блок аллергенов */
+.allergens-box {
+  margin: var(--space-4) 0;
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-warning-bg);
+  border-left: 4px solid var(--color-warning);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text);
+}
+
+/* Ингредиенты */
+.ingredients-chips-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: var(--space-2);
+}
+
+.ingredient-chip {
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  font-size: var(--font-size-xs);
+  color: var(--color-text);
+}
+
+/* Селектор количества и кнопка добавления */
+.dish-order-actions-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.qty-stepper {
+  display: flex;
+  align-items: center;
+  background-color: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 2px;
+}
+
+.qty-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-extrabold);
+  color: var(--color-text);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  display: grid;
+  place-items: center;
+  transition: background-color var(--transition-fast);
+}
+
+.qty-btn:hover {
+  background-color: var(--color-border);
+}
+
+.qty-number {
+  min-width: 36px;
+  text-align: center;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-extrabold);
+}

@@ -1,0 +1,110 @@
+/**
+ * MAP.CSS — Стили интерактивной векторной карты заведений и маркеров
+ */
+
+.map-container-wrapper {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  position: relative;
+  height: 540px;
+  margin-bottom: var(--space-8);
+  display: flex;
+  flex-direction: column;
+}
+
+.map-canvas-area {
+  flex: 1;
+  position: relative;
+  background-color: #E5EDE6;
+  background-image: 
+    radial-gradient(#D3E0D4 1.5px, transparent 1.5px),
+    linear-gradient(to right, #DFE9E0 1px, transparent 1px),
+    linear-gradient(to bottom, #DFE9E0 1px, transparent 1px);
+  background-size: 30px 30px, 60px 60px, 60px 60px;
+  overflow: hidden;
+  cursor: grab;
+}
+
+html[data-theme="neo-dark"] .map-canvas-area {
+  background-color: #121A22;
+  background-image: 
+    radial-gradient(#1E2936 1.5px, transparent 1.5px),
+    linear-gradient(to right, #18222E 1px, transparent 1px),
+    linear-gradient(to bottom, #18222E 1px, transparent 1px);
+  background-size: 30px 30px, 60px 60px, 60px 60px;
+}
+
+/* Маркеры заведений на карте */
+.map-marker-pin {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform var(--transition-fast), filter var(--transition-fast);
+  z-index: 10;
+}
+
+.map-marker-pin:hover {
+  transform: translate(-50%, -110%) scale(1.1);
+  z-index: 20;
+}
+
+.marker-bubble {
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-full);
+  padding: 6px 14px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  font-weight: var(--font-weight-extrabold);
+  font-size: var(--font-size-xs);
+  color: var(--color-text);
+}
+
+.marker-point {
+  width: 12px;
+  height: 12px;
+  background-color: var(--color-primary);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  margin-top: -2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Поп-ап карточка заведения на карте */
+.map-popup-card {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  width: 320px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-elevated);
+  z-index: 30;
+  animation: slideUpFade 0.25s ease forwards;
+}
+
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.map-controls-bar {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 30;
+}

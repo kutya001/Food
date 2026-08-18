@@ -8,13 +8,16 @@ import { AuthManager } from './state/auth.js';
 import { ThemeManager, THEMES } from './theme/themeManager.js';
 import { Header } from './components/header.js';
 import { Router } from './router.js';
+import { ShowcaseView } from './views/showcaseView.js';
+import { CartDrawer } from './components/cartDrawer.js';
 import { ExportService } from './services/exportService.js';
 import { showToast } from './components/toast.js';
 
 class App {
   static init() {
-    // 1. Инициализация базы данных и темы
+    // 1. Инициализация базы данных, темы и корзины
     ThemeManager.init();
+    CartDrawer.init();
 
     // 2. Рендер шапки
     const headerRoot = document.getElementById('header-root');
@@ -28,12 +31,12 @@ class App {
     // 4. Запуск роутера
     Router.init();
 
-    console.log('🚀 FoodFlow — Этап 2: База данных, Мультиролевость и Роутер запущены');
+    console.log('🚀 FoodFlow — Этап 3: Витрина, КБЖУ, Карта и Оформление заказов запущены');
   }
 
   static registerRoutes() {
     // 1. Витрина (Showcase)
-    Router.register('showcase', (container) => this.renderShowcaseView(container));
+    Router.register('showcase', (container) => ShowcaseView.render(container));
 
     // 2. Бизнес (Общепит)
     Router.register('business', (container) => this.renderBusinessView(container));
