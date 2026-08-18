@@ -17,7 +17,8 @@ export class FinanceService {
     // 1. ВЫРУЧКА (REVENUE)
     const b2cOrders = orders.filter(o => o.type === 'b2c_retail');
     const posOrders = orders.filter(o => o.type === 'pos_cashier');
-    const completedCorp = corpRequests.filter(r => r.status === 'delivered' || r.status === 'ready' || r.status === 'in_progress');
+    const validCorpStatuses = ['accepted', 'cooking', 'ready', 'on_way', 'delivered'];
+    const completedCorp = corpRequests.filter(r => validCorpStatuses.includes(r.status));
 
     const b2cRevenue = b2cOrders.reduce((sum, o) => sum + (o.totalSum || 0), 0);
     const posRevenue = posOrders.reduce((sum, o) => sum + (o.totalSum || 0), 0);

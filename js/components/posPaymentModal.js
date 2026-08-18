@@ -163,6 +163,18 @@ export class PosPaymentModal {
         return;
       }
 
+      // Если оплата с корп. счета — списываем с баланса организации
+      if (activeMethod === 'corp') {
+        const orgSelect = backdrop.querySelector('#select-corp-client');
+        const orgId = orgSelect ? orgSelect.value : 'org_1';
+        const org = db.getById('organizations', orgId);
+        if (org) {
+          db.update('organizations', org.id, {
+            currentBalance: Math.max(0, (org.currentBalance || 0) - billData.totalSum)
+          });
+        }
+      }
+
       // Сохраняем заказ в БД
       const createdOrder = db.insert('orders', {
         estId: est.id,

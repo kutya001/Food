@@ -52,11 +52,13 @@ export class StockService {
     deductionsMap.forEach((kgToDeduct, ingId) => {
       const ing = db.getById('ingredients', ingId);
       if (ing) {
-        const newStock = Math.max(0, Math.round((ing.currentStock - kgToDeduct) * 100) / 100);
-        db.update('ingredients', ingId, { currentStock: newStock });
+        const current = ing.currentStock !== undefined && ing.currentStock !== null ? ing.currentStock : (ing.stockQty ?? 0);
+        const newStock = Math.max(0, Math.round((current - kgToDeduct) * 100) / 100);
+        db.update('ingredients', ingId, { currentStock: newStock, stockQty: newStock });
 
-        if (newStock <= ing.minStockAlert) {
-          warnings.push(`${ing.name} (остаток: ${newStock} ${ing.unit})`);
+        const minAlert = ing.minStockAlert !== undefined && ing.minStockAlert !== null ? ing.minStockAlert : (ing.minStockQty ?? 5);
+        if (newStock <= minAlert) {
+          warnings.push(`${ing.name} (остаток: ${newStock} ${ing.unit || 'кг'})`);
         }
       }
     });

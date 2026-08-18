@@ -126,6 +126,7 @@ export class ReceiptModal {
 
         db.update('ingredients', ingId, {
           currentStock: newStock,
+          stockQty: newStock,
           purchasePrice: avgPrice,
           lastSupplier: supplier
         });

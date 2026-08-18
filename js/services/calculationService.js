@@ -50,14 +50,17 @@ export class CalculationService {
           const cost = weightKg * ing.purchasePrice;
           totalCostSom += cost;
 
-          // Расчет КБЖУ по нетто весу
-          const netCoeff = item.netWeight / 100;
-          if (ing.kbjuPer100g) {
-            totalCalories += (ing.kbjuPer100g.calories || 0) * netCoeff;
-            totalProtein += (ing.kbjuPer100g.protein || 0) * netCoeff;
-            totalFat += (ing.kbjuPer100g.fat || 0) * netCoeff;
-            totalCarbs += (ing.kbjuPer100g.carbs || 0) * netCoeff;
-          }
+          // Расчет КБЖУ по нетто весу (поддержка direct properties и kbjuPer100g)
+          const netCoeff = (item.netWeight || item.grossWeight || 100) / 100;
+          const cal = ing.kbjuPer100g?.calories ?? ing.calories ?? 0;
+          const prot = ing.kbjuPer100g?.protein ?? ing.protein ?? 0;
+          const fat = ing.kbjuPer100g?.fat ?? ing.fat ?? 0;
+          const carbs = ing.kbjuPer100g?.carbs ?? ing.carbs ?? 0;
+
+          totalCalories += cal * netCoeff;
+          totalProtein += prot * netCoeff;
+          totalFat += fat * netCoeff;
+          totalCarbs += carbs * netCoeff;
         }
       }
       // 2. Если это вложенный полуфабрикат (другая техкарта)
@@ -65,8 +68,8 @@ export class CalculationService {
         const semiCard = db.getById('techCards', item.semiFinishedCardId);
         if (semiCard) {
           const subCalc = this.calculateTechCard(semiCard, new Set(visited));
-          const portionWeight = semiCard.outputWeight || 100;
-          const ratio = item.grossWeight / portionWeight;
+          const portionWeight = Math.max(1, semiCard.outputWeight || 100);
+          const ratio = (item.grossWeight || portionWeight) / portionWeight;
 
           totalCostSom += (subCalc.costPrice * ratio);
           totalCalories += (subCalc.kbju.calories * ratio);

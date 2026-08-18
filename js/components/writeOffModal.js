@@ -119,7 +119,7 @@ export class WriteOffModal {
         }
 
         const newStock = Math.round((ing.currentStock - qty) * 10) / 10;
-        db.update('ingredients', ingId, { currentStock: newStock });
+        db.update('ingredients', ingId, { currentStock: newStock, stockQty: newStock });
         showToast(`Акт списания утвержден: -${qty} ${ing.unit} ${ing.name}`, 'warning');
       }
 

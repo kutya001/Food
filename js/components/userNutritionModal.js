@@ -4,6 +4,7 @@
 
 import { db } from '../state/db.js';
 import { AuthManager } from '../state/auth.js';
+import { CalculationService } from '../services/calculationService.js';
 
 export class UserNutritionModal {
   static open() {
@@ -20,13 +21,15 @@ export class UserNutritionModal {
     orders.forEach(order => {
       (order.items || []).forEach(item => {
         const dish = db.getById('menuItems', item.menuItemId || item.id);
-        if (dish && dish.kbju) {
-          totalCalories += (dish.kbju.calories || 0) * (item.qty || 1);
-          totalProtein += (dish.kbju.protein || 0) * (item.qty || 1);
-          totalFat += (dish.kbju.fat || 0) * (item.qty || 1);
-          totalCarbs += (dish.kbju.carbs || 0) * (item.qty || 1);
-          itemsCount += (item.qty || 1);
-        }
+        const tc = db.getById('techCards', dish?.techCardId);
+        const kbju = item.kbju || dish?.kbju || tc?.calculatedKbju || (tc ? CalculationService.calculateTechCard(tc).kbju : { calories: 350, protein: 15, fat: 12, carbs: 32 });
+
+        const qty = item.qty || 1;
+        totalCalories += (kbju.calories || 0) * qty;
+        totalProtein += (kbju.protein || 0) * qty;
+        totalFat += (kbju.fat || 0) * qty;
+        totalCarbs += (kbju.carbs || 0) * qty;
+        itemsCount += qty;
       });
     });
 
