@@ -1,0 +1,67 @@
+/**
+ * CORPORATE.CSS — Стили корпоративного портала заказчика, бюджета и заявок на питание
+ */
+
+.corporate-header {
+  margin-bottom: var(--space-6);
+}
+
+/* Карточка баланса и бюджета компании */
+.corp-budget-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-card);
+  margin-bottom: var(--space-6);
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: var(--space-4);
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  .corp-budget-card {
+    grid-template-columns: 1fr;
+  }
+}
+
+.budget-progress-track {
+  width: 100%;
+  height: 10px;
+  background-color: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.budget-progress-bar {
+  height: 100%;
+  background-color: var(--color-primary);
+  border-radius: var(--radius-full);
+  transition: width var(--transition-base);
+}
+
+/* Таблица корпоративных заявок */
+.corp-requests-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.corp-requests-table th,
+.corp-requests-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--font-size-sm);
+}
+
+.corp-requests-table th {
+  background-color: var(--color-surface-alt);
+  font-weight: var(--font-weight-bold);
+  text-align: left;
+}
+
+.corp-requests-table tr:hover {
+  background-color: var(--color-surface-alt);
+}

@@ -8,9 +8,11 @@ import { CalculationService } from '../services/calculationService.js';
 import { BusinessWarehouseView } from './businessWarehouseView.js';
 import { BusinessRecipesView } from './businessRecipesView.js';
 import { BusinessMenuView } from './businessMenuView.js';
+import { BusinessCorpRequestsView } from './businessCorpRequestsView.js';
+import { BusinessFinanceView } from './businessFinanceView.js';
 
 export class BusinessView {
-  static activeTab = 'warehouse'; // 'warehouse' | 'recipes' | 'menu'
+  static activeTab = 'warehouse'; // 'warehouse' | 'recipes' | 'menu' | 'corp' | 'finance'
 
   static render(container) {
     const est = AuthManager.getActiveEstablishment() || { id: 'est_1', name: 'Столовая «Свежесть»', address: 'ул. Токтогула, 125' };
@@ -27,10 +29,10 @@ export class BusinessView {
           <div>
             <div style="display: flex; gap: var(--space-2); margin-bottom: 4px;">
               <span class="badge badge-primary">Кабинет общепита</span>
-              <span class="badge badge-secondary">Учёт и производство</span>
+              <span class="badge badge-secondary">Учёт, B2B и Финансы</span>
             </div>
             <h1 style="font-size: var(--font-size-2xl); margin: 0;">🏢 ${est.name}</h1>
-            <p class="text-xs text-muted" style="margin-top: 2px;">📍 ${est.address} · Склад, калькуляция техкарт и прейскурант</p>
+            <p class="text-xs text-muted" style="margin-top: 2px;">📍 ${est.address} · Склад, калькуляция техкарт, B2B-заявки и P&L</p>
           </div>
         </div>
 
@@ -73,6 +75,12 @@ export class BusinessView {
           <button class="business-tab-btn ${this.activeTab === 'menu' ? 'active' : ''}" data-tab="menu">
             🍽️ Прейскурант и Стоп-лист
           </button>
+          <button class="business-tab-btn ${this.activeTab === 'corp' ? 'active' : ''}" data-tab="corp">
+            🏢 B2B Заявки компаний
+          </button>
+          <button class="business-tab-btn ${this.activeTab === 'finance' ? 'active' : ''}" data-tab="finance">
+            📊 Финансы и P&L
+          </button>
         </div>
 
         <!-- Контейнер активной вкладки -->
@@ -96,6 +104,10 @@ export class BusinessView {
       BusinessRecipesView.render(tabRoot);
     } else if (this.activeTab === 'menu') {
       BusinessMenuView.render(tabRoot);
+    } else if (this.activeTab === 'corp') {
+      BusinessCorpRequestsView.render(tabRoot);
+    } else if (this.activeTab === 'finance') {
+      BusinessFinanceView.render(tabRoot);
     }
   }
 

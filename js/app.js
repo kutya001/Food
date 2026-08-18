@@ -11,6 +11,7 @@ import { Router } from './router.js';
 import { ShowcaseView } from './views/showcaseView.js';
 import { BusinessView } from './views/businessView.js';
 import { PosView } from './views/posView.js';
+import { CorporatePortalView } from './views/corporatePortalView.js';
 import { CartDrawer } from './components/cartDrawer.js';
 import { ExportService } from './services/exportService.js';
 import { showToast } from './components/toast.js';
@@ -33,7 +34,7 @@ class App {
     // 4. Запуск роутера
     Router.init();
 
-    console.log('🚀 FoodFlow — Этап 5: Сенсорный POS-терминал и списание сырья запущены');
+    console.log('🚀 FoodFlow — Этап 6: Корпоративные B2B-заявки и Финансы P&L запущены');
   }
 
   static registerRoutes() {
@@ -47,7 +48,7 @@ class App {
     Router.register('pos', (container) => PosView.render(container));
 
     // 4. Корпоративное (Организация-заказчик)
-    Router.register('corporate', (container) => this.renderCorporateView(container));
+    Router.register('corporate', (container) => CorporatePortalView.render(container));
 
     // 5. Админ (Управление платформой)
     Router.register('admin', (container) => this.renderAdminView(container));

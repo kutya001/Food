@@ -1,0 +1,75 @@
+/**
+ * FINANCE.CSS — Стили отчета о прибылях и убытках (P&L) и Data-Viz аналитики
+ */
+
+.finance-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+@media (max-width: 900px) {
+  .finance-kpi-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.pl-statement-container {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  margin-bottom: var(--space-6);
+}
+
+.pl-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.pl-table th,
+.pl-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--font-size-sm);
+}
+
+.pl-table th {
+  background-color: var(--color-surface-alt);
+  font-weight: var(--font-weight-bold);
+  text-align: left;
+}
+
+.pl-row-header {
+  background-color: var(--color-surface-alt);
+  font-weight: var(--font-weight-extrabold);
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+}
+
+.pl-row-total {
+  background-color: var(--color-surface-alt);
+  font-weight: var(--font-weight-extrabold);
+  border-top: 2px solid var(--color-border);
+}
+
+/* Data-viz полосы структуры выручки */
+.dataviz-bar-container {
+  display: flex;
+  height: 24px;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin: var(--space-3) 0;
+  border: 1px solid var(--color-border);
+}
+
+.dataviz-segment {
+  height: 100%;
+  transition: width var(--transition-base);
+}
+
+.dataviz-seg-b2c { background-color: var(--data-viz-1); }
+.dataviz-seg-pos { background-color: var(--data-viz-2); }
+.dataviz-seg-b2b { background-color: var(--data-viz-3); }
