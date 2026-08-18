@@ -15,6 +15,7 @@ import { CorporatePortalView } from './views/corporatePortalView.js';
 import { AdminView } from './views/adminView.js';
 import { DbViewerView } from './views/dbViewerView.js';
 import { CartDrawer } from './components/cartDrawer.js';
+import { MobileNav } from './components/mobileNav.js';
 import { ExportService } from './services/exportService.js';
 import { showToast } from './components/toast.js';
 
@@ -25,10 +26,15 @@ class App {
     ThemeManager.init();
     CartDrawer.init();
 
-    // 2. Рендер шапки
+    // 2. Рендер шапки и мобильной панели
     const headerRoot = document.getElementById('header-root');
     if (headerRoot) {
       Header.render(headerRoot);
+    }
+
+    const mobileNavRoot = document.getElementById('mobile-nav-root');
+    if (mobileNavRoot) {
+      MobileNav.render(mobileNavRoot);
     }
 
     // 3. Регистрация маршрутов в Router

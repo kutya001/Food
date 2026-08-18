@@ -1,0 +1,193 @@
+/**
+ * MOBILE.CSS — Полноценные стили адаптивной мобильной версии (Bottom Bar, Drawer, Шторки)
+ */
+
+/* Утилиты видимости */
+.show-on-mobile {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .hide-on-mobile {
+    display: none !important;
+  }
+
+  .show-on-mobile {
+    display: flex !important;
+  }
+
+  /* Дополнительный нижний отступ для основного контента под Bottom Bar */
+  .main-content {
+    padding-bottom: 74px !important;
+  }
+
+  .site-header {
+    padding: 8px 0;
+  }
+
+  .header-container {
+    gap: 8px;
+  }
+}
+
+/* =========================================================================
+   НИЖНЯЯ МОБИЛЬНАЯ ПАНЕЛЬ НАВИГАЦИИ (BOTTOM NAVIGATION BAR)
+   ========================================================================= */
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background-color: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
+  z-index: 900;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 4px;
+}
+
+@media (max-width: 768px) {
+  .mobile-bottom-nav {
+    display: flex;
+  }
+}
+
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  height: 100%;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  transition: color var(--transition-fast), transform var(--transition-fast);
+  position: relative;
+  touch-action: manipulation;
+}
+
+.mobile-nav-item:active {
+  transform: scale(0.92);
+}
+
+.mobile-nav-item.active {
+  color: var(--color-primary);
+}
+
+.mobile-nav-icon {
+  font-size: 1.3rem;
+  margin-bottom: 2px;
+  line-height: 1;
+}
+
+.mobile-nav-badge {
+  position: absolute;
+  top: 6px;
+  right: calc(50% - 18px);
+  background-color: var(--color-error);
+  color: #fff;
+  font-size: 10px;
+  font-weight: bold;
+  border-radius: 10px;
+  padding: 1px 5px;
+  line-height: 1;
+}
+
+/* =========================================================================
+   БОКОВОЕ ВЫДВИЖНОЕ МЕНЮ (OFFCANVAS DRAWER)
+   ========================================================================= */
+.mobile-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: var(--color-overlay);
+  backdrop-filter: blur(4px);
+  z-index: 1100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-base);
+}
+
+.mobile-drawer-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mobile-drawer-panel {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 290px;
+  max-width: 85vw;
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform var(--transition-base);
+  z-index: 1101;
+  overflow-y: auto;
+}
+
+.mobile-drawer-backdrop.open .mobile-drawer-panel {
+  transform: translateX(0);
+}
+
+.mobile-drawer-header {
+  padding: var(--space-4);
+  background-color: var(--color-surface-alt);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mobile-drawer-body {
+  padding: var(--space-4);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.mobile-menu-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 12px;
+  color: var(--color-text);
+  text-decoration: none;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-sm);
+  border-radius: var(--radius-md);
+  transition: background-color var(--transition-fast);
+}
+
+.mobile-menu-link:hover,
+.mobile-menu-link.active {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+/* =========================================================================
+   НИЖНИЕ ШТОРКИ (BOTTOM SHEET DIALOGS)
+   ========================================================================= */
+@media (max-width: 768px) {
+  .modal-dialog {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0 !important;
+    margin-top: auto !important;
+    margin-bottom: 0 !important;
+    max-height: 90vh !important;
+    overflow-y: auto;
+  }
+}
