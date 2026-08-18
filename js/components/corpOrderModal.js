@@ -1,5 +1,5 @@
 /**
- * CORP-ORDER-MODAL.JS — Конструктор корпоративной заявки на питание сотрудников
+ * CORP-ORDER-MODAL.JS — Конструктор и редактор корпоративной заявки на питание сотрудников
  */
 
 import { db } from '../state/db.js';
@@ -7,9 +7,11 @@ import { AuthManager } from '../state/auth.js';
 import { showToast } from './toast.js';
 
 export class CorpOrderModal {
-  static open(onSuccess = null) {
+  static open(onSuccess = null, editRequestId = null) {
     const org = AuthManager.getActiveOrganization() || { id: 'org_1', name: 'ОсОО «Alfa Tech»', budgetMonthly: 120000, currentBalance: 84500 };
     const establishments = db.getCollection('establishments');
+
+    let existingReq = editRequestId ? db.getById('corpRequests', editRequestId) : null;
 
     let backdrop = document.getElementById('corp-order-backdrop');
     if (!backdrop) {
@@ -19,18 +21,18 @@ export class CorpOrderModal {
       document.body.appendChild(backdrop);
     }
 
-    let selectedEstId = establishments[0]?.id || 'est_1';
+    let selectedEstId = existingReq?.estId || establishments[0]?.id || 'est_1';
     let availableDishes = db.query('menuItems', m => m.estId === selectedEstId && !m.inStopList);
 
-    let rows = [
-      { menuItemId: availableDishes[0]?.id || '', qty: 15, department: 'IT отдел' }
-    ];
+    let rows = existingReq && existingReq.items && existingReq.items.length > 0
+      ? existingReq.items.map(i => ({ menuItemId: i.menuItemId || availableDishes[0]?.id, qty: i.qty || 10, department: i.department || 'IT отдел' }))
+      : [{ menuItemId: availableDishes[0]?.id || '', qty: 15, department: 'IT отдел' }];
 
     backdrop.innerHTML = `
       <div class="modal-dialog" style="max-width: 740px;" role="dialog">
         <div class="modal-header">
           <div>
-            <h3 class="modal-title">🏢 Формирование корпоративной заявки</h3>
+            <h3 class="modal-title">${existingReq ? '✏️ Редактирование заявки #' + existingReq.id.slice(-4) : '🏢 Формирование корпоративной заявки'}</h3>
             <p class="text-xs text-muted">${org.name} · Доступный лимит: <strong>${org.currentBalance} сом</strong></p>
           </div>
           <button class="modal-close-btn" id="close-corp-order-modal">✕</button>
@@ -40,7 +42,7 @@ export class CorpOrderModal {
           <div class="grid grid-cols-3" style="gap: var(--space-3);">
             <div class="form-group">
               <label class="form-label">Заведение-партнёр:</label>
-              <select class="select" id="corp-est-select">
+              <select class="select" id="corp-est-select" ${existingReq ? 'disabled' : ''}>
                 ${establishments.map(e => `
                   <option value="${e.id}" ${e.id === selectedEstId ? 'selected' : ''}>${e.name}</option>
                 `).join('')}
@@ -48,14 +50,14 @@ export class CorpOrderModal {
             </div>
             <div class="form-group">
               <label class="form-label">Дата питания:</label>
-              <input type="date" class="input" id="corp-order-date" value="${new Date().toISOString().split('T')[0]}" required>
+              <input type="date" class="input" id="corp-order-date" value="${existingReq?.date || new Date().toISOString().split('T')[0]}" required>
             </div>
             <div class="form-group">
               <label class="form-label">Время доставки обеда:</label>
               <select class="select" id="corp-order-time">
-                <option value="12:30">⏰ 12:30 (1-я смена)</option>
-                <option value="13:30">⏰ 13:30 (2-я смена)</option>
-                <option value="18:30">⏰ 18:30 (Ужин)</option>
+                <option value="12:30" ${existingReq?.timeSlot === '12:30' ? 'selected' : ''}>⏰ 12:30 (1-я смена)</option>
+                <option value="13:30" ${existingReq?.timeSlot === '13:30' ? 'selected' : ''}>⏰ 13:30 (2-я смена)</option>
+                <option value="18:30" ${existingReq?.timeSlot === '18:30' ? 'selected' : ''}>⏰ 18:30 (Ужин)</option>
               </select>
             </div>
           </div>
@@ -101,7 +103,7 @@ export class CorpOrderModal {
           <div style="margin-top:var(--space-6); display:flex; justify-content:flex-end; gap:var(--space-2);">
             <button type="button" class="btn btn-secondary" id="cancel-corp-order-btn">Отмена</button>
             <button type="submit" class="btn btn-primary btn-lg">
-              🚀 Отправить заявку в общепит →
+              ${existingReq ? '💾 Сохранить изменения →' : '🚀 Отправить заявку в общепит →'}
             </button>
           </div>
         </form>
@@ -149,7 +151,8 @@ export class CorpOrderModal {
       }).join('');
 
       totalSumLabel.textContent = `${totalSum} сом`;
-      const rem = org.currentBalance - totalSum;
+      const baseBalance = existingReq ? (org.currentBalance + (existingReq.totalSum || 0)) : org.currentBalance;
+      const rem = baseBalance - totalSum;
       remBudgetLabel.textContent = `${rem} сом`;
       remBudgetLabel.style.color = rem < 0 ? 'var(--color-error)' : 'var(--color-success)';
 
@@ -177,12 +180,14 @@ export class CorpOrderModal {
       });
     };
 
-    estSelect.addEventListener('change', (e) => {
-      selectedEstId = e.target.value;
-      availableDishes = db.query('menuItems', m => m.estId === selectedEstId && !m.inStopList);
-      rows = [{ menuItemId: availableDishes[0]?.id || '', qty: 10, department: 'IT отдел' }];
-      renderRows();
-    });
+    if (!existingReq) {
+      estSelect.addEventListener('change', (e) => {
+        selectedEstId = e.target.value;
+        availableDishes = db.query('menuItems', m => m.estId === selectedEstId && !m.inStopList);
+        rows = [{ menuItemId: availableDishes[0]?.id || '', qty: 10, department: 'IT отдел' }];
+        renderRows();
+      });
+    }
 
     backdrop.querySelector('#btn-add-corp-row').addEventListener('click', () => {
       rows.push({ menuItemId: availableDishes[0]?.id || '', qty: 5, department: 'Бухгалтерия' });
@@ -191,7 +196,7 @@ export class CorpOrderModal {
 
     renderRows();
 
-    // Отправка заявки
+    // Отправка / сохранение заявки
     backdrop.querySelector('#corp-order-form').addEventListener('submit', (e) => {
       e.preventDefault();
 
@@ -212,25 +217,42 @@ export class CorpOrderModal {
         };
       });
 
-      if (calcTotal > org.currentBalance) {
+      const baseBalance = existingReq ? (org.currentBalance + (existingReq.totalSum || 0)) : org.currentBalance;
+
+      if (calcTotal > baseBalance) {
         showToast('Ошибка: сумма заявки превышает доступный лимит компании!', 'error');
         return;
       }
 
-      const newReq = db.insert('corpRequests', {
-        orgId: org.id,
-        estId: selectedEstId,
-        date: backdrop.querySelector('#corp-order-date').value,
-        timeSlot: backdrop.querySelector('#corp-order-time').value,
-        items: orderItems,
-        totalSum: calcTotal,
-        status: 'new'
-      });
+      if (existingReq) {
+        // Обновление существующей заявки
+        const diff = calcTotal - (existingReq.totalSum || 0);
+        db.update('corpRequests', existingReq.id, {
+          date: backdrop.querySelector('#corp-order-date').value,
+          timeSlot: backdrop.querySelector('#corp-order-time').value,
+          items: orderItems,
+          totalSum: calcTotal
+        });
 
-      // Списываем баланс
-      db.update('organizations', org.id, { currentBalance: org.currentBalance - calcTotal });
+        // Корректируем баланс
+        db.update('organizations', org.id, { currentBalance: org.currentBalance - diff });
+        showToast(`Заявка #${existingReq.id.slice(-4)} успешно отредактирована!`, 'success');
+      } else {
+        // Создание новой заявки
+        const newReq = db.insert('corpRequests', {
+          orgId: org.id,
+          estId: selectedEstId,
+          date: backdrop.querySelector('#corp-order-date').value,
+          timeSlot: backdrop.querySelector('#corp-order-time').value,
+          items: orderItems,
+          totalSum: calcTotal,
+          status: 'new'
+        });
 
-      showToast(`Корпоративная заявка #${newReq.id.slice(-4)} на ${calcTotal} сом успешно создана!`, 'success');
+        // Списываем баланс
+        db.update('organizations', org.id, { currentBalance: org.currentBalance - calcTotal });
+        showToast(`Корпоративная заявка #${newReq.id.slice(-4)} на ${calcTotal} сом успешно создана!`, 'success');
+      }
 
       backdrop.classList.remove('open');
       setTimeout(() => backdrop.remove(), 250);

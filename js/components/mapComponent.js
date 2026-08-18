@@ -229,56 +229,75 @@ export class MapComponent {
     return this.points.filter(p => p.categoryType === this.activeCategory);
   }
 
+  static isRafPending = false;
+
+  static scheduleTransform(panLayer) {
+    if (this.isRafPending) return;
+    this.isRafPending = true;
+    requestAnimationFrame(() => {
+      this.updateTransform(panLayer);
+      this.isRafPending = false;
+    });
+  }
+
   static bindEvents(container, onSelectEstablishment) {
     const canvas = container.querySelector('#map-canvas');
     const panLayer = container.querySelector('#map-pan-layer');
 
-    // Pan & Drag мышью
+    // Оптимизированный Pan & Drag мышью
+    const onMouseMove = (e) => {
+      if (!this.isDragging) return;
+      this.panX = e.clientX - this.startX;
+      this.panY = e.clientY - this.startY;
+      this.scheduleTransform(panLayer);
+    };
+
+    const onMouseUp = () => {
+      this.isDragging = false;
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+
     canvas.addEventListener('mousedown', (e) => {
       if (e.target.closest('.map-marker-pin') || e.target.closest('.map-ctrl-btn') || e.target.closest('.map-popup-card')) return;
       this.isDragging = true;
       this.startX = e.clientX - this.panX;
       this.startY = e.clientY - this.panY;
+      window.addEventListener('mousemove', onMouseMove, { passive: true });
+      window.addEventListener('mouseup', onMouseUp);
     });
 
-    window.addEventListener('mousemove', (e) => {
-      if (!this.isDragging) return;
-      this.panX = e.clientX - this.startX;
-      this.panY = e.clientY - this.startY;
-      this.updateTransform(panLayer);
-    });
+    // Оптимизированный Pan & Drag на тач-экранах
+    const onTouchMove = (e) => {
+      if (!this.isDragging || e.touches.length !== 1) return;
+      this.panX = e.touches[0].clientX - this.startX;
+      this.panY = e.touches[0].clientY - this.startY;
+      this.scheduleTransform(panLayer);
+    };
 
-    window.addEventListener('mouseup', () => {
+    const onTouchEnd = () => {
       this.isDragging = false;
-    });
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
+    };
 
-    // Pan & Drag на тач-экранах
     canvas.addEventListener('touchstart', (e) => {
       if (e.target.closest('.map-marker-pin') || e.target.closest('.map-ctrl-btn') || e.target.closest('.map-popup-card')) return;
       if (e.touches.length === 1) {
         this.isDragging = true;
         this.startX = e.touches[0].clientX - this.panX;
         this.startY = e.touches[0].clientY - this.panY;
+        window.addEventListener('touchmove', onTouchMove, { passive: true });
+        window.addEventListener('touchend', onTouchEnd);
       }
     }, { passive: true });
-
-    canvas.addEventListener('touchmove', (e) => {
-      if (!this.isDragging || e.touches.length !== 1) return;
-      this.panX = e.touches[0].clientX - this.startX;
-      this.panY = e.touches[0].clientY - this.startY;
-      this.updateTransform(panLayer);
-    }, { passive: true });
-
-    canvas.addEventListener('touchend', () => {
-      this.isDragging = false;
-    });
 
     // Зум колесом мыши
     canvas.addEventListener('wheel', (e) => {
       e.preventDefault();
       const delta = e.deltaY < 0 ? 0.1 : -0.1;
       this.scale = Math.min(Math.max(this.scale + delta, 0.7), 2.2);
-      this.updateTransform(panLayer);
+      this.scheduleTransform(panLayer);
     }, { passive: false });
 
     // Кнопки зума и сброса

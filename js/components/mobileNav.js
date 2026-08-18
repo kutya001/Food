@@ -102,16 +102,19 @@ export class MobileNav {
       moreBtn.addEventListener('click', () => this.openDrawer());
     }
 
-    // Обновление бейджа корзины
-    window.addEventListener('cartUpdated', () => this.updateCartBadge());
-    window.addEventListener('roleChanged', () => {
-      const root = document.getElementById('mobile-nav-root');
-      if (root) this.render(root);
-    });
-    window.addEventListener('routeChanged', () => {
-      const root = document.getElementById('mobile-nav-root');
-      if (root) this.render(root);
-    });
+    // Обновление бейджа корзины и слушатели
+    if (!this.isListenersInitialized) {
+      this.isListenersInitialized = true;
+      window.addEventListener('cartUpdated', () => this.updateCartBadge());
+      window.addEventListener('roleChanged', () => {
+        const root = document.getElementById('mobile-nav-root');
+        if (root) this.render(root);
+      });
+      window.addEventListener('routeChanged', () => {
+        const root = document.getElementById('mobile-nav-root');
+        if (root) this.render(root);
+      });
+    }
   }
 
   static updateCartBadge() {

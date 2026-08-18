@@ -22,11 +22,16 @@ export class CorpDetailsModal {
     }
 
     const getStatusBadge = (status) => {
-      if (status === 'new') return '<span class="badge badge-primary">Новая заявка</span>';
-      if (status === 'in_progress') return '<span class="badge badge-warning">В работе на кухне</span>';
-      if (status === 'ready') return '<span class="badge badge-accent">Готово к доставке</span>';
-      if (status === 'delivered') return '<span class="badge badge-success">Выдано / Доставлено</span>';
-      return '<span class="badge badge-secondary">Завершено</span>';
+      switch (status) {
+        case 'new': return '<span class="badge badge-primary">⏳ Новая заявка</span>';
+        case 'accepted': return '<span class="badge badge-secondary" style="background:var(--color-primary); color:#fff;">🤝 Принята</span>';
+        case 'cooking': return '<span class="badge badge-warning">👨‍🍳 Готовится на кухне</span>';
+        case 'ready': return '<span class="badge badge-accent">🍱 Готово к отправке</span>';
+        case 'on_way': return '<span class="badge badge-secondary" style="background:#0284c7; color:#fff;">🚚 В пути (доставка)</span>';
+        case 'delivered': return '<span class="badge badge-success">🎉 Доставлено / Выдано</span>';
+        case 'cancelled': return '<span class="badge badge-error">❌ Отменена</span>';
+        default: return `<span class="badge badge-secondary">${status}</span>`;
+      }
     };
 
     backdrop.innerHTML = `
@@ -34,7 +39,7 @@ export class CorpDetailsModal {
         <div class="modal-header">
           <div>
             <h3 class="modal-title">📄 Спецификация заявки #${req.id.slice(-6)}</h3>
-            <p class="text-xs text-muted">${org.name} · ${est.name} · Доставка на ${req.date} (${req.timeSlot})</p>
+            <p class="text-xs text-muted">${org.name} · ${est.name} · Доставка на ${req.date || req.targetDate || '2026-08-19'} (${req.timeSlot || '12:30'})</p>
           </div>
           <button class="modal-close-btn" id="close-corp-details-modal">✕</button>
         </div>
@@ -48,7 +53,7 @@ export class CorpDetailsModal {
             <div style="text-align:right;">
               <span class="text-xs text-muted">Сумма заявки:</span>
               <div style="font-size:var(--font-size-xl); font-weight:var(--font-weight-extrabold); color:var(--color-primary);">
-                ${req.totalSum} сом
+                ${req.totalSum.toLocaleString('ru-RU')} сом
               </div>
             </div>
           </div>
@@ -70,9 +75,9 @@ export class CorpDetailsModal {
               ${(req.items || []).map(item => `
                 <tr>
                   <td><strong>${item.name}</strong></td>
-                  <td><span class="badge badge-secondary">${item.department || 'Офис'}</span></td>
-                  <td>${item.qty} шт</td>
-                  <td style="text-align:right;"><strong>${item.total || (item.price * item.qty)} сом</strong></td>
+                  <td><span class="badge badge-secondary">${item.department || item.dept || 'Офис'}</span></td>
+                  <td>${item.qty || item.portions || 1} шт</td>
+                  <td style="text-align:right;"><strong>${(item.total || ((item.price || item.corpPrice || 150) * (item.qty || item.portions || 1))).toLocaleString('ru-RU')} сом</strong></td>
                 </tr>
               `).join('')}
             </tbody>
@@ -83,14 +88,23 @@ export class CorpDetailsModal {
             <div style="border-top:1px solid var(--color-border); padding-top:var(--space-3); margin-top:var(--space-4);">
               <label class="form-label">Изменить статус заявки:</label>
               <div style="display:flex; gap:var(--space-2); flex-wrap:wrap;">
-                <button class="btn btn-warning btn-sm btn-set-status" data-status="in_progress">
-                  🍳 В работу на кухню
+                <button class="btn btn-primary btn-sm btn-set-status" data-status="accepted">
+                  🤝 Принять
+                </button>
+                <button class="btn btn-warning btn-sm btn-set-status" data-status="cooking">
+                  👨‍🍳 На кухню
                 </button>
                 <button class="btn btn-accent btn-sm btn-set-status" data-status="ready">
-                  📦 Готово к отправке
+                  🍱 Готово к отправке
+                </button>
+                <button class="btn btn-primary btn-sm btn-set-status" data-status="on_way" style="background:#0284c7;">
+                  🚚 В пути
                 </button>
                 <button class="btn btn-success btn-sm btn-set-status" data-status="delivered">
-                  ✅ Выдано / Доставлено
+                  🎉 Доставлено
+                </button>
+                <button class="btn btn-secondary btn-sm btn-set-status" data-status="cancelled" style="color:var(--color-error);">
+                  ❌ Отменить
                 </button>
               </div>
             </div>
@@ -111,6 +125,14 @@ export class CorpDetailsModal {
       btn.addEventListener('click', () => {
         const newStatus = btn.dataset.status;
         db.update('corpRequests', req.id, { status: newStatus });
+        
+        if (newStatus === 'cancelled') {
+          const org = db.getById('organizations', req.orgId);
+          if (org) {
+            db.update('organizations', org.id, { currentBalance: (org.currentBalance || 0) + req.totalSum });
+          }
+        }
+
         showToast('Статус корпоративной заявки обновлен!', 'success');
         backdrop.classList.remove('open');
         setTimeout(() => backdrop.remove(), 250);

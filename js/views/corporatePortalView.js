@@ -6,6 +6,7 @@ import { db } from '../state/db.js';
 import { AuthManager } from '../state/auth.js';
 import { CorpOrderModal } from '../components/corpOrderModal.js';
 import { CorpDetailsModal } from '../components/corpDetailsModal.js';
+import { showToast } from '../components/toast.js';
 
 export class CorporatePortalView {
   static render(container) {
@@ -19,8 +20,21 @@ export class CorporatePortalView {
     };
 
     const requests = db.query('corpRequests', r => r.orgId === org.id);
-    const spentBudget = org.budgetMonthly - org.currentBalance;
-    const spentPercent = Math.min(100, Math.round((spentBudget / org.budgetMonthly) * 100));
+    const spentBudget = (org.budgetMonthly || 120000) - (org.currentBalance || 0);
+    const spentPercent = Math.min(100, Math.max(0, Math.round((spentBudget / (org.budgetMonthly || 120000)) * 100)));
+
+    const getStatusBadge = (status) => {
+      switch (status) {
+        case 'new': return '<span class="badge badge-primary">⏳ Новая</span>';
+        case 'accepted': return '<span class="badge badge-secondary" style="background: var(--color-primary); color: #fff;">🤝 Принята</span>';
+        case 'cooking': return '<span class="badge badge-warning">👨‍🍳 Готовится</span>';
+        case 'ready': return '<span class="badge badge-accent">🍱 Готов</span>';
+        case 'on_way': return '<span class="badge badge-secondary" style="background: #0284c7; color: #fff;">🚚 В пути</span>';
+        case 'delivered': return '<span class="badge badge-success">🎉 Доставлен</span>';
+        case 'cancelled': return '<span class="badge badge-error">❌ Отменён</span>';
+        default: return `<span class="badge badge-secondary">${status}</span>`;
+      }
+    };
 
     container.innerHTML = `
       <div class="container">
@@ -33,7 +47,7 @@ export class CorporatePortalView {
             </div>
             <h1 style="font-size: var(--font-size-2xl); margin: 0;">🏢 ${org.name}</h1>
             <p class="text-xs text-muted" style="margin-top: 2px;">
-              Штат: <strong>${org.employeeCount} сотрудников</strong> · Договор до ${org.contractEnd}
+              Штат: <strong>${org.employeesCount || org.employeeCount || 45} сотрудников</strong> · Договор до ${org.contractEnd || '2026-12-31'}
             </p>
           </div>
 
@@ -47,21 +61,21 @@ export class CorporatePortalView {
           <div>
             <span class="text-xs text-muted">Ежемесячный лимит на питание компании:</span>
             <div style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-extrabold); color: var(--color-text);">
-              ${org.budgetMonthly} сом / мес
+              ${(org.budgetMonthly || org.monthlyLimit || 120000).toLocaleString('ru-RU')} сом / мес
             </div>
             <div class="budget-progress-track">
               <div class="budget-progress-bar" style="width: ${spentPercent}%; background-color: ${spentPercent > 85 ? 'var(--color-warning)' : 'var(--color-primary)'};"></div>
             </div>
             <div style="display: flex; justify-content: space-between; font-size: 11px; margin-top: 4px;" class="text-muted">
-              <span>Израсходовано: ${spentBudget} сом (${spentPercent}%)</span>
-              <span>Лимит: ${org.budgetMonthly} сом</span>
+              <span>Израсходовано: ${spentBudget.toLocaleString('ru-RU')} сом (${spentPercent}%)</span>
+              <span>Лимит: ${(org.budgetMonthly || 120000).toLocaleString('ru-RU')} сом</span>
             </div>
           </div>
 
           <div style="background: var(--color-surface-alt); padding: var(--space-3); border-radius: var(--radius-md); border: 1px solid var(--color-border); text-align: center;">
             <span class="text-xs text-muted">Доступный остаток:</span>
             <div style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-extrabold); color: var(--color-success); margin-top: 2px;">
-              ${org.currentBalance} сом
+              ${(org.currentBalance || 0).toLocaleString('ru-RU')} сом
             </div>
           </div>
 
@@ -90,7 +104,7 @@ export class CorporatePortalView {
                 <th>Порций</th>
                 <th>Сумма заявки</th>
                 <th>Статус</th>
-                <th style="text-align: right;">Действие</th>
+                <th style="text-align: right;">Управление</th>
               </tr>
             </thead>
             <tbody>
@@ -102,26 +116,32 @@ export class CorporatePortalView {
                 </tr>
               ` : requests.map(req => {
                 const est = db.getById('establishments', req.estId) || { name: 'Столовая' };
-                const totalPortions = (req.items || []).reduce((s, i) => s + i.qty, 0);
-
-                let statusBadge = '<span class="badge badge-primary">Новая</span>';
-                if (req.status === 'in_progress') statusBadge = '<span class="badge badge-warning">Готовится</span>';
-                if (req.status === 'ready') statusBadge = '<span class="badge badge-accent">В пути</span>';
-                if (req.status === 'delivered') statusBadge = '<span class="badge badge-success">Доставлено</span>';
+                const totalPortions = (req.items || []).reduce((s, i) => s + (i.qty || i.portions || 1), 0);
+                const canEditOrCancel = req.status === 'new';
 
                 return `
                   <tr>
                     <td><strong>#${req.id.slice(-4)}</strong></td>
-                    <td>${req.date}</td>
-                    <td>⏰ ${req.timeSlot}</td>
+                    <td>${req.date || req.targetDate || '2026-08-19'}</td>
+                    <td>⏰ ${req.timeSlot || '12:30'}</td>
                     <td>🏠 ${est.name}</td>
                     <td><strong>${totalPortions} порций</strong></td>
-                    <td><strong style="color: var(--color-primary);">${req.totalSum} сом</strong></td>
-                    <td>${statusBadge}</td>
+                    <td><strong style="color: var(--color-primary);">${req.totalSum.toLocaleString('ru-RU')} сом</strong></td>
+                    <td>${getStatusBadge(req.status)}</td>
                     <td style="text-align: right;">
-                      <button class="btn btn-secondary btn-sm btn-view-corp-req" data-req-id="${req.id}">
-                        📄 Спецификация
-                      </button>
+                      <div style="display: flex; gap: 4px; justify-content: flex-end;">
+                        <button class="btn btn-secondary btn-sm btn-view-corp-req" data-req-id="${req.id}" title="Спецификация">
+                          📄 Детали
+                        </button>
+                        ${canEditOrCancel ? `
+                          <button class="btn btn-secondary btn-sm btn-edit-corp-req" data-req-id="${req.id}" title="Редактировать заявку">
+                            ✏️ Изменить
+                          </button>
+                          <button class="btn btn-secondary btn-sm btn-cancel-corp-req" data-req-id="${req.id}" style="color: var(--color-error);" title="Отменить заявку">
+                            ❌ Отмена
+                          </button>
+                        ` : ''}
+                      </div>
                     </td>
                   </tr>
                 `;
@@ -144,6 +164,32 @@ export class CorporatePortalView {
       btn.addEventListener('click', () => {
         const id = btn.dataset.reqId;
         CorpDetailsModal.open(id, false, () => this.render(container));
+      });
+    });
+
+    container.querySelectorAll('.btn-edit-corp-req').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.reqId;
+        CorpOrderModal.open(() => this.render(container), id);
+      });
+    });
+
+    container.querySelectorAll('.btn-cancel-corp-req').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.reqId;
+        const req = db.getById('corpRequests', id);
+        if (req && confirm(`Вы уверены, что хотите отменить заявку #${req.id.slice(-4)} на сумму ${req.totalSum} сом? Средства вернутся на баланс.`)) {
+          db.update('corpRequests', req.id, { status: 'cancelled' });
+          
+          // Возврат средств на баланс
+          const org = AuthManager.getActiveOrganization();
+          if (org) {
+            db.update('organizations', org.id, { currentBalance: (org.currentBalance || 0) + req.totalSum });
+          }
+
+          showToast(`Заявка #${req.id.slice(-4)} отменена. Средства (+${req.totalSum} сом) возвращены на баланс!`, 'info');
+          this.render(container);
+        }
       });
     });
   }

@@ -16,11 +16,44 @@ export class BusinessWarehouseView {
     const allIngredients = db.query('ingredients', i => i.estId === est.id);
 
     const categories = ['all', 'Мясо и птица', 'Бакалея', 'Овощи и зелень', 'Молочные продукты', 'Соусы и специи'];
-    const lowStockItems = allIngredients.filter(i => i.currentStock <= i.minStockAlert);
-    const totalWarehouseSom = Math.round(allIngredients.reduce((sum, i) => sum + (i.currentStock * i.purchasePrice), 0));
+    
+    // Безопасный расчет запасов
+    const lowStockItems = allIngredients.filter(i => {
+      const stock = i.currentStock ?? i.stockQty ?? 0;
+      const minAlert = i.minStockAlert ?? i.minStockQty ?? 5;
+      return stock <= minAlert;
+    });
+
+    const totalWarehouseSom = Math.round(allIngredients.reduce((sum, i) => {
+      const stock = i.currentStock ?? i.stockQty ?? 0;
+      const price = i.purchasePrice ?? i.costPrice ?? 0;
+      return sum + (stock * price);
+    }, 0));
 
     container.innerHTML = `
       <div>
+        <!-- KPI сводка склада -->
+        <div class="grid grid-cols-3" style="gap: var(--space-3); margin-bottom: var(--space-4);">
+          <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-3);">
+            <span class="text-xs text-muted">Оценка запасов склада:</span>
+            <div style="font-size: var(--font-size-xl); font-weight: var(--font-weight-extrabold); color: var(--color-primary);">
+              ${totalWarehouseSom.toLocaleString('ru-RU')} сом
+            </div>
+          </div>
+          <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-3);">
+            <span class="text-xs text-muted">Всего наименований сырья:</span>
+            <div style="font-size: var(--font-size-xl); font-weight: var(--font-weight-extrabold);">
+              ${allIngredients.length} поз.
+            </div>
+          </div>
+          <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-3);">
+            <span class="text-xs text-muted">Требуют закупки:</span>
+            <div style="font-size: var(--font-size-xl); font-weight: var(--font-weight-extrabold); color: ${lowStockItems.length > 0 ? 'var(--color-warning)' : 'var(--color-success)'};">
+              ${lowStockItems.length} поз.
+            </div>
+          </div>
+        </div>
+
         <!-- Предупреждение о критических остатках -->
         ${lowStockItems.length > 0 ? `
           <div class="alert alert-warning" style="margin-bottom: var(--space-4); display: flex; justify-content: space-between; align-items: center;">
@@ -97,11 +130,19 @@ export class BusinessWarehouseView {
 
     if (this.searchQuery.trim()) {
       const q = this.searchQuery.toLowerCase().trim();
-      list = list.filter(i => i.name.toLowerCase().includes(q) || i.category.toLowerCase().includes(q));
+      list = list.filter(i => i.name.toLowerCase().includes(q) || (i.category && i.category.toLowerCase().includes(q)));
     }
 
     if (this.activeCategory !== 'all') {
-      list = list.filter(i => i.category === this.activeCategory);
+      const catMap = {
+        'Мясо и птица': ['Мясо', 'Птица', 'Мясо Premium', 'Мясо и птица'],
+        'Бакалея': ['Бакалея', 'Крупы', 'Бобовые', 'Специи', 'Масла', 'Хлеб'],
+        'Овощи и зелень': ['Овощи', 'Зелень', 'Овощи и зелень'],
+        'Молочные продукты': ['Молочные', 'Сыр', 'Молочные продукты'],
+        'Соусы и специи': ['Соусы', 'Специи', 'Соусы и специи']
+      };
+      const allowedCats = catMap[this.activeCategory] || [this.activeCategory];
+      list = list.filter(i => allowedCats.includes(i.category));
     }
 
     if (list.length === 0) {
@@ -116,19 +157,24 @@ export class BusinessWarehouseView {
     }
 
     tbody.innerHTML = list.map(ing => {
-      const isCritical = ing.currentStock <= (ing.minStockAlert * 0.5);
-      const isWarning = ing.currentStock <= ing.minStockAlert;
-      const totalSum = Math.round(ing.currentStock * ing.purchasePrice);
+      const stock = ing.currentStock !== undefined && ing.currentStock !== null ? ing.currentStock : (ing.stockQty ?? 0);
+      const minAlert = ing.minStockAlert !== undefined && ing.minStockAlert !== null ? ing.minStockAlert : (ing.minStockQty ?? 5);
+      const price = ing.purchasePrice ?? ing.costPrice ?? 0;
+      const unit = ing.unit || 'кг';
+      const totalSum = Math.round(stock * price);
+
+      const isCritical = stock <= (minAlert * 0.5);
+      const isWarning = stock <= minAlert;
 
       let rowClass = '';
-      let statusBadge = '<span class="badge badge-success">В норме</span>';
+      let statusBadge = '<span class="badge badge-success">В НОРМЕ</span>';
 
       if (isCritical) {
         rowClass = 'stock-critical-row';
-        statusBadge = '<span class="badge badge-error">Критический запас!</span>';
+        statusBadge = '<span class="badge badge-error">КРИТИЧНО</span>';
       } else if (isWarning) {
         rowClass = 'stock-warning-row';
-        statusBadge = '<span class="badge badge-warning">Заканчивается</span>';
+        statusBadge = '<span class="badge badge-warning">МАЛО</span>';
       }
 
       return `
@@ -137,13 +183,13 @@ export class BusinessWarehouseView {
             <strong>${ing.name}</strong>
             ${ing.allergens?.length > 0 ? `<div class="text-xs text-muted">Аллергены: ${ing.allergens.join(', ')}</div>` : ''}
           </td>
-          <td>${ing.category}</td>
+          <td><span class="badge badge-secondary">${ing.category || 'Сырье'}</span></td>
           <td>
-            <strong style="font-size: var(--font-size-md);">${ing.currentStock} ${ing.unit}</strong>
+            <strong style="font-size: var(--font-size-md); color: ${isWarning ? 'var(--color-warning)' : 'var(--color-text)'};">${stock} ${unit}</strong>
           </td>
-          <td class="text-muted">${ing.minStockAlert} ${ing.unit}</td>
-          <td><strong>${ing.purchasePrice} сом</strong> / ${ing.unit}</td>
-          <td><strong style="color: var(--color-primary);">${totalSum} сом</strong></td>
+          <td class="text-muted">${minAlert} ${unit}</td>
+          <td><strong>${price} сом</strong> / ${unit}</td>
+          <td><strong style="color: var(--color-primary);">${totalSum.toLocaleString('ru-RU')} сом</strong></td>
           <td>${statusBadge}</td>
         </tr>
       `;

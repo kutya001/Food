@@ -118,23 +118,28 @@ export class Header {
 
     CartDrawer.updateHeaderBadge();
 
-    // Слушатель смены темы
-    window.addEventListener('themeChanged', (e) => {
-      const themeKey = e.detail.theme;
-      const themeData = THEMES[themeKey];
-      const nameEl = document.getElementById('header-theme-name');
-      const swatchEl = document.getElementById('header-theme-swatch');
+    // Глобальные слушатели регистрируются строго один раз
+    if (!this.isListenersInitialized) {
+      this.isListenersInitialized = true;
 
-      if (nameEl && themeData) nameEl.textContent = themeData.name;
-      if (swatchEl && themeData) swatchEl.style.backgroundColor = themeData.primary;
-    });
+      // Слушатель смены темы
+      window.addEventListener('themeChanged', (e) => {
+        const themeKey = e.detail.theme;
+        const themeData = THEMES[themeKey];
+        const nameEl = document.getElementById('header-theme-name');
+        const swatchEl = document.getElementById('header-theme-swatch');
 
-    // Слушатель смены роли — перерендер шапки для обновления ссылок меню
-    window.addEventListener('roleChanged', () => {
-      const headerRoot = document.getElementById('header-root');
-      if (headerRoot) {
-        Header.render(headerRoot);
-      }
-    });
+        if (nameEl && themeData) nameEl.textContent = themeData.name;
+        if (swatchEl && themeData) swatchEl.style.backgroundColor = themeData.primary;
+      });
+
+      // Слушатель смены роли — перерендер шапки для обновления ссылок меню
+      window.addEventListener('roleChanged', () => {
+        const headerRoot = document.getElementById('header-root');
+        if (headerRoot) {
+          Header.render(headerRoot);
+        }
+      });
+    }
   }
 }

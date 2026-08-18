@@ -26,6 +26,19 @@ class Database {
         if (!this.data.users || !this.data.establishments || !this.data.menuItems) {
           console.warn('⚠️ Структура БД повреждена, переинициализация сидовыми данными');
           this.reset();
+        } else if (this.data.ingredients) {
+          // Нормализация остатков и порогов сырья
+          this.data.ingredients.forEach(i => {
+            if (i.currentStock === undefined || i.currentStock === null) {
+              i.currentStock = i.stockQty !== undefined ? i.stockQty : 25;
+            }
+            if (i.minStockAlert === undefined || i.minStockAlert === null) {
+              i.minStockAlert = i.minStockQty !== undefined ? i.minStockQty : 5;
+            }
+            if (i.purchasePrice === undefined || i.purchasePrice === null) {
+              i.purchasePrice = i.costPrice || 100;
+            }
+          });
         }
       } else {
         this.reset();
