@@ -9,6 +9,7 @@ import { ThemeManager, THEMES } from './theme/themeManager.js';
 import { Header } from './components/header.js';
 import { Router } from './router.js';
 import { ShowcaseView } from './views/showcaseView.js';
+import { BusinessView } from './views/businessView.js';
 import { CartDrawer } from './components/cartDrawer.js';
 import { ExportService } from './services/exportService.js';
 import { showToast } from './components/toast.js';
@@ -31,7 +32,7 @@ class App {
     // 4. Запуск роутера
     Router.init();
 
-    console.log('🚀 FoodFlow — Этап 3: Витрина, КБЖУ, Карта и Оформление заказов запущены');
+    console.log('🚀 FoodFlow — Этап 4: Бизнес-модуль, Склад, Техкарты и Калькуляция запущены');
   }
 
   static registerRoutes() {
@@ -39,7 +40,7 @@ class App {
     Router.register('showcase', (container) => ShowcaseView.render(container));
 
     // 2. Бизнес (Общепит)
-    Router.register('business', (container) => this.renderBusinessView(container));
+    Router.register('business', (container) => BusinessView.render(container));
 
     // 3. POS-Касса
     Router.register('pos', (container) => this.renderPosView(container));
